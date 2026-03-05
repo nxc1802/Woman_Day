@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For My Love 💕 — Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+
+  <!-- Ambient orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- Petal particles -->
+  <div class="petals-bg" id="petalsBg"></div>
+
+  <div class="page-wrapper home-wrapper">
+
+    <!-- Header -->
+    <header class="home-header" id="homeHeader">
+      <div class="header-date">Happy Women's Day 🌸 March 8, 2025</div>
+      <h1 class="page-title home-title">Choose Your Gift</h1>
+      <p class="page-subtitle">A little something made with all my love for you</p>
+    </header>
+
+    <!-- Menu Grid -->
+    <nav class="menu-grid" id="menuGrid">
+
+      <!-- Music -->
+      <a href="pages/music.html" class="menu-card" data-index="0">
+        <div class="card-glow"></div>
+        <div class="card-icon">🎵</div>
+        <div class="card-text-wrap">
+          <h2 class="card-title">Our Songs</h2>
+          <p class="card-desc">Songs that remind me of us</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <!-- Letter -->
+      <a href="pages/letter.html" class="menu-card" data-index="1">
+        <div class="card-glow"></div>
+        <div class="card-icon">💌</div>
+        <div class="card-text-wrap">
+          <h2 class="card-title">Love Letter</h2>
+          <p class="card-desc">Words straight from my heart</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <!-- Gallery -->
+      <a href="pages/gallery.html" class="menu-card" data-index="2">
+        <div class="card-glow"></div>
+        <div class="card-icon">📸</div>
+        <div class="card-text-wrap">
+          <h2 class="card-title">Our Memories</h2>
+          <p class="card-desc">Moments I'll never forget</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <!-- Gift -->
+      <a href="pages/gift.html" class="menu-card card-special" data-index="3">
+        <div class="card-glow"></div>
+        <div class="card-badge">Special ✨</div>
+        <div class="card-icon">🎁</div>
+        <div class="card-text-wrap">
+          <h2 class="card-title">My Gift to You</h2>
+          <p class="card-desc">Something magical awaits...</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+    </nav>
+
+    <!-- Footer message -->
+    <footer class="home-footer" id="homeFooter">
+      <p>Made with <span class="animate-heartbeat" style="display:inline-block">❤️</span> just for you</p>
+    </footer>
+
+  </div>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script>
+    /* ---- Petal background ---- */
+    (function() {
+      const container = document.getElementById('petalsBg');
+      const petals = ['🌸', '🌺', '🌷', '✨', '💮'];
+      for (let i = 0; i < 20; i++) {
+        const el = document.createElement('span');
+        el.className = 'petal';
+        el.textContent = petals[Math.floor(Math.random() * petals.length)];
+        el.style.setProperty('--left', Math.random() * 100 + '%');
+        el.style.setProperty('--size', (0.8 + Math.random() * 1) + 'rem');
+        el.style.setProperty('--dur', (12 + Math.random() * 12) + 's');
+        el.style.setProperty('--delay', (Math.random() * 10) + 's');
+        el.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+        container.appendChild(el);
+      }
+    })();
+
+    /* ---- GSAP entrance ---- */
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof gsap === 'undefined') return;
+
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      tl.from('#homeHeader', {
+        opacity: 0,
+        y: -40,
+        duration: 0.9,
+      })
+      .from('.menu-card', {
+        opacity: 0,
+        y: 60,
+        scale: 0.88,
+        stagger: 0.15,
+        duration: 0.7,
+        ease: 'back.out(1.4)',
+      }, '-=0.3')
+      .from('#homeFooter', {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+      }, '-=0.2');
+    });
+  </script>
+</body>
+</html>

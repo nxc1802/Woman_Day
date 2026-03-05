@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Memories 📸</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/gallery.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+</head>
+<body>
+
+  <!-- Ambient orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- Back button -->
+  <a href="../home.html" class="back-btn">← Back</a>
+
+  <div class="page-wrapper gallery-wrapper">
+
+    <!-- Header -->
+    <header class="gallery-header" id="galleryHeader">
+      <h1 class="page-title">Our Memories</h1>
+      <p class="page-subtitle">Every photo, a story worth keeping</p>
+    </header>
+
+    <!-- Stats bar -->
+    <div class="gallery-stats glass-card" id="galleryStats">
+      <div class="stat-item">
+        <span class="stat-num" id="statCount">8</span>
+        <span class="stat-label">Moments</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">∞</span>
+        <span class="stat-label">Memories</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">1</span>
+        <span class="stat-label">You</span>
+      </div>
+    </div>
+
+    <!-- Gallery grid -->
+    <div class="gallery-grid" id="galleryGrid">
+
+      <!-- Large feature card -->
+      <div class="gallery-item gallery-item--large" data-aos="fade-up" data-aos-duration="1200" onclick="openLightbox(0)">
+        <img src="../assets/images/gf1.jpg" alt="Memory 1"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">❤️</div>
+          <p class="overlay-caption">The day everything changed</p>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="100" onclick="openLightbox(1)">
+        <img src="../assets/images/gf2.jpg" alt="Memory 2"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">🌸</div>
+          <p class="overlay-caption">Your beautiful smile</p>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200" onclick="openLightbox(2)">
+        <img src="../assets/images/gf3.jpg" alt="Memory 3"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">💕</div>
+          <p class="overlay-caption">Our favorite place</p>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-aos="zoom-in" data-aos-duration="1100" data-aos-delay="50" onclick="openLightbox(3)">
+        <img src="../assets/images/gf4.jpg" alt="Memory 4"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">✨</div>
+          <p class="overlay-caption">Always glowing</p>
+        </div>
+      </div>
+
+      <div class="gallery-item gallery-item--tall" data-aos="fade-right" data-aos-duration="1200" data-aos-delay="100" onclick="openLightbox(4)">
+        <img src="../assets/images/gf5.jpg" alt="Memory 5"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">💗</div>
+          <p class="overlay-caption">A moment in time</p>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="150" onclick="openLightbox(5)">
+        <img src="../assets/images/gf6.jpg" alt="Memory 6"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">🌺</div>
+          <p class="overlay-caption">Pure happiness</p>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-aos="zoom-in" data-aos-duration="1100" data-aos-delay="200" onclick="openLightbox(6)">
+        <img src="../assets/images/gf7.jpg" alt="Memory 7"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">💖</div>
+          <p class="overlay-caption">My world</p>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="250" onclick="openLightbox(7)">
+        <img src="../assets/images/gf8.jpg" alt="Memory 8"
+          onerror="this.parentElement.classList.add('img-placeholder')" />
+        <div class="gallery-overlay">
+          <div class="overlay-heart">🥰</div>
+          <p class="overlay-caption">Forever and always</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer quote -->
+    <div class="gallery-quote" data-aos="fade-up" data-aos-duration="1000">
+      <p>"Every moment with you is my favorite moment." 💕</p>
+    </div>
+
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox hidden" id="lightbox" onclick="closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1); event.stopPropagation()">‹</button>
+    <button class="lb-nav lb-next" onclick="lbNav(1); event.stopPropagation()">›</button>
+    <div class="lb-img-wrap" onclick="event.stopPropagation()">
+      <img src="" alt="" id="lbImage" />
+      <p class="lb-caption" id="lbCaption"></p>
+    </div>
+  </div>
+
+  <!-- AOS + GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script src="../js/gallery.js"></script>
+</body>
+</html>
