@@ -285,16 +285,42 @@ function AddLetterModal({ onAdd, onClose }) {
   );
 }
 
+const STORAGE_KEY = 'love_custom_letters';
+
+function loadCustomLetters() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomLetters(letters) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(letters));
+  } catch {
+    // storage quota exceeded — ignore
+  }
+}
+
 /* ---- Main Page ---- */
 export default function LetterPage() {
-  const [letters, setLetters] = useState(DEFAULT_LETTERS);
-  const [openLetter, setOpenLetter]   = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [filterAuthor, setFilterAuthor] = useState('all');
+  const [customLetters, setCustomLetters] = useState(loadCustomLetters);
+  const [openLetter, setOpenLetter]       = useState(null);
+  const [showAddForm, setShowAddForm]     = useState(false);
+  const [filterAuthor, setFilterAuthor]   = useState('all');
 
+  const letters  = [...DEFAULT_LETTERS, ...customLetters];
   const filtered = filterAuthor === 'all' ? letters : letters.filter(l => l.author === filterAuthor);
 
-  function handleAdd(newLetter) { setLetters(prev => [...prev, newLetter]); }
+  function handleAdd(newLetter) {
+    setCustomLetters(prev => {
+      const updated = [...prev, newLetter];
+      saveCustomLetters(updated);
+      return updated;
+    });
+  }
 
   return (
     <div className="letter-page">
