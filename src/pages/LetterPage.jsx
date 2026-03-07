@@ -313,8 +313,10 @@ export default function LetterPage() {
   const [openLetter, setOpenLetter]       = useState(null);
   const [showAddForm, setShowAddForm]     = useState(false);
   const [filterAuthor, setFilterAuthor]   = useState('all');
-  const [confirmId, setConfirmId]         = useState(null); // id awaiting delete confirm
-  const confirmTimer = useRef(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // letter pending delete confirm
+
+  const longPressTimer = useRef(null);
+  const didLongPress   = useRef(false);
 
   const letters  = [...DEFAULT_LETTERS, ...customLetters];
   const filtered = filterAuthor === 'all' ? letters : letters.filter(l => l.author === filterAuthor);
@@ -327,23 +329,38 @@ export default function LetterPage() {
     });
   }
 
-  function handleDeleteClick(e, id) {
-    e.stopPropagation();
-    if (confirmId === id) {
-      // Second click — actually delete
-      clearTimeout(confirmTimer.current);
-      setConfirmId(null);
-      setCustomLetters(prev => {
-        const updated = prev.filter(l => l.id !== id);
-        saveCustomLetters(updated);
-        return updated;
-      });
-    } else {
-      // First click — ask confirm, auto-reset after 3s
-      setConfirmId(id);
-      clearTimeout(confirmTimer.current);
-      confirmTimer.current = setTimeout(() => setConfirmId(null), 3000);
+  function confirmDelete(id) {
+    setDeleteConfirmId(null);
+    setCustomLetters(prev => {
+      const updated = prev.filter(l => l.id !== id);
+      saveCustomLetters(updated);
+      return updated;
+    });
+  }
+
+  function startLongPress(letter) {
+    if (!letter.isCustom) return;
+    didLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      setDeleteConfirmId(letter.id);
+    }, 650);
+  }
+
+  function cancelLongPress() {
+    clearTimeout(longPressTimer.current);
+  }
+
+  function handleCardClick(letter) {
+    if (didLongPress.current) {
+      didLongPress.current = false;
+      return;
     }
+    if (deleteConfirmId !== null) {
+      setDeleteConfirmId(null);
+      return;
+    }
+    setOpenLetter(letter);
   }
 
   return (
@@ -356,7 +373,6 @@ export default function LetterPage() {
         <h1 className="page-title">Lọ Thuốc Tình Yêu 💊</h1>
         <p className="page-subtitle">Những viên thuốc & cảm xúc của hai đứa mình</p>
 
-        {/* Filter tabs */}
         <div className="author-filter">
           {['all', 'Anh', 'Em'].map(f => (
             <button key={f} className={`filter-tab ${filterAuthor === f ? 'active' : ''}`}
@@ -371,22 +387,17 @@ export default function LetterPage() {
         {filtered.map(letter => (
           <div
             key={letter.id}
-            className={`letter-card card-${letter.size}`}
+            className={`letter-card card-${letter.size} ${deleteConfirmId === letter.id ? 'delete-mode' : ''}`}
             style={{ '--rot': `${letter.rotation}deg`, '--card-color': letter.color }}
-            onClick={() => setOpenLetter(letter)}
+            onMouseDown={() => startLongPress(letter)}
+            onMouseUp={cancelLongPress}
+            onMouseLeave={cancelLongPress}
+            onTouchStart={() => startLongPress(letter)}
+            onTouchEnd={cancelLongPress}
+            onTouchMove={cancelLongPress}
+            onClick={() => handleCardClick(letter)}
           >
             <div className="card-pin" />
-
-            {/* Delete button — only for user-added letters */}
-            {letter.isCustom && (
-              <button
-                className={`card-delete-btn ${confirmId === letter.id ? 'confirm' : ''}`}
-                onClick={e => handleDeleteClick(e, letter.id)}
-                title={confirmId === letter.id ? 'Nhấn lần nữa để xoá' : 'Xoá thư này'}
-              >
-                {confirmId === letter.id ? '⚠️' : '🗑️'}
-              </button>
-            )}
 
             <div className="card-inner">
               <div className="card-tag-row">
@@ -405,14 +416,19 @@ export default function LetterPage() {
             </div>
             <div className="card-shine" />
 
-            {/* Confirm tooltip */}
-            {confirmId === letter.id && (
-              <div className="card-confirm-tip">Nhấn ⚠️ lần nữa để xoá</div>
+            {/* Delete confirm overlay — appears only after long press on custom letters */}
+            {deleteConfirmId === letter.id && (
+              <div className="card-delete-overlay" onClick={e => e.stopPropagation()}>
+                <p className="delete-overlay-text">Xoá lá thư này?</p>
+                <div className="delete-overlay-actions">
+                  <button className="delete-overlay-cancel" onClick={e => { e.stopPropagation(); setDeleteConfirmId(null); }}>Huỷ</button>
+                  <button className="delete-overlay-confirm" onClick={e => { e.stopPropagation(); confirmDelete(letter.id); }}>Xoá 🗑️</button>
+                </div>
+              </div>
             )}
           </div>
         ))}
 
-        {/* Add card */}
         <div className="add-letter-card" onClick={() => setShowAddForm(true)}>
           <div className="add-card-pin" />
           <span className="add-card-icon">+</span>

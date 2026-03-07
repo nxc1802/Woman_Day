@@ -106,61 +106,67 @@
   border-radius: 2px;
 }
 
-/* Delete button — custom letters only */
-.card-delete-btn {
+/* Delete confirm overlay — triggered by long press, hidden by default */
+.card-delete-overlay {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 5;
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(4px);
+  inset: 0;
+  border-radius: 12px;
+  background: rgba(254,242,242,0.94);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  z-index: 10;
+  animation: overlayIn 0.2s ease;
+}
+@keyframes overlayIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.delete-overlay-text {
   font-size: 0.85rem;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0;
-  transform: scale(0.7);
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+  font-weight: 700;
+  color: #b91c1c;
+  letter-spacing: 0.01em;
 }
-.letter-card:hover .card-delete-btn {
-  opacity: 1;
-  transform: scale(1);
+.delete-overlay-actions {
+  display: flex;
+  gap: 0.6rem;
 }
-.card-delete-btn:hover { background: rgba(254,202,202,0.9); }
-.card-delete-btn.confirm {
-  opacity: 1;
-  transform: scale(1.15);
-  background: rgba(254,226,226,0.95);
-  animation: deletePulse 0.4s ease;
-}
-@keyframes deletePulse {
-  0% { transform: scale(1.15); }
-  50% { transform: scale(0.9); }
-  100% { transform: scale(1.15); }
-}
-
-/* Confirm tooltip */
-.card-confirm-tip {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(239,68,68,0.9);
-  color: #fff;
-  font-size: 0.65rem;
+.delete-overlay-cancel,
+.delete-overlay-confirm {
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  border: none;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 20px;
-  z-index: 5;
-  pointer-events: none;
-  animation: tipFadeIn 0.2s ease;
-  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-@keyframes tipFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+.delete-overlay-cancel {
+  background: rgba(0,0,0,0.07);
+  color: #555;
+}
+.delete-overlay-cancel:hover { background: rgba(0,0,0,0.12); transform: scale(1.05); }
+.delete-overlay-confirm {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.35);
+}
+.delete-overlay-confirm:hover { background: #dc2626; transform: scale(1.05); }
+
+/* Subtle shake when entering delete mode */
+.letter-card.delete-mode {
+  animation: cardShake 0.35s ease;
+}
+@keyframes cardShake {
+  0%  { transform: rotate(var(--rot, 0deg)) translateX(0); }
+  25% { transform: rotate(var(--rot, 0deg)) translateX(-5px); }
+  50% { transform: rotate(var(--rot, 0deg)) translateX(5px); }
+  75% { transform: rotate(var(--rot, 0deg)) translateX(-3px); }
+  100%{ transform: rotate(var(--rot, 0deg)) translateX(0); }
 }
 
 /* Card inner */
