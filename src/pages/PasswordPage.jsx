@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/password.css';
 
-const CORRECT_PASSWORD = 'iloveyou';
+const CORRECT_PASSWORD = '05102025';
 
 const BG_EMOJIS = ['❤️', '🌸', '💕', '💗', '🌺', '💖', '✨', '🌷'];
 
@@ -141,7 +141,7 @@ export default function PasswordPage() {
           <button type="submit" className="btn-pink">Unlock ✨</button>
         </form>
 
-        <p className="pw-hint">Hint: three words that mean everything 🥺</p>
+        <p className="pw-hint">Gợi ý: Ngày mình quen nhau 🥺</p>
       </div>
     </div>
   );
