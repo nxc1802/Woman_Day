@@ -3,12 +3,15 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/photobooth.css';
 
-/*
-  Add photobooth images to: public/assets/images/photobooth/
-  Then list the filenames below.
-*/
 const PHOTOS = [
-  // e.g. '/assets/images/photobooth/photo1.jpg',
+  '/assets/images/photobooth/IMG_0718.JPG',
+  '/assets/images/photobooth/IMG_0859.JPG',
+  '/assets/images/photobooth/IMG_0860.JPG',
+  '/assets/images/photobooth/IMG_0861.JPG',
+  '/assets/images/photobooth/IMG_0862.JPG',
+  '/assets/images/photobooth/IMG_0909.JPG',
+  '/assets/images/photobooth/IMG_0910.JPG',
+  '/assets/images/photobooth/IMG_0911.JPG',
 ];
 
 const STRIP_COLORS = [
