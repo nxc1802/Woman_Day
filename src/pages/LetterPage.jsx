@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/letter.css';
+import { fetchCustomLetters, insertCustomLetter, deleteCustomLetter } from '../lib/supabase';
 
 const CARD_COLORS = [
   { bg: '#fce7f3', text: '#9d174d' },
@@ -285,57 +286,46 @@ function AddLetterModal({ onAdd, onClose }) {
   );
 }
 
-const STORAGE_KEY = 'love_custom_letters';
-
-function loadCustomLetters() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    // Ensure all loaded custom letters have the isCustom flag (backward compat)
-    return parsed.map(l => ({ ...l, isCustom: true }));
-  } catch {
-    return [];
-  }
-}
-
-function saveCustomLetters(letters) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(letters));
-  } catch {
-    // storage quota exceeded — ignore
-  }
-}
-
 /* ---- Main Page ---- */
 export default function LetterPage() {
-  const [customLetters, setCustomLetters] = useState(loadCustomLetters);
+  const [customLetters, setCustomLetters] = useState([]);
+  const [loading, setLoading]             = useState(true);
   const [openLetter, setOpenLetter]       = useState(null);
   const [showAddForm, setShowAddForm]     = useState(false);
   const [filterAuthor, setFilterAuthor]   = useState('all');
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // letter pending delete confirm
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const longPressTimer = useRef(null);
   const didLongPress   = useRef(false);
 
+  // Load letters from Supabase on mount
+  useEffect(() => {
+    fetchCustomLetters()
+      .then(setCustomLetters)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   const letters  = [...DEFAULT_LETTERS, ...customLetters];
   const filtered = filterAuthor === 'all' ? letters : letters.filter(l => l.author === filterAuthor);
 
-  function handleAdd(newLetter) {
-    setCustomLetters(prev => {
-      const updated = [...prev, { ...newLetter, isCustom: true }];
-      saveCustomLetters(updated);
-      return updated;
-    });
+  async function handleAdd(newLetter) {
+    try {
+      const saved = await insertCustomLetter(newLetter);
+      setCustomLetters(prev => [...prev, saved]);
+    } catch (err) {
+      console.error('Failed to save letter:', err);
+    }
   }
 
-  function confirmDelete(id) {
+  async function confirmDelete(id) {
     setDeleteConfirmId(null);
-    setCustomLetters(prev => {
-      const updated = prev.filter(l => l.id !== id);
-      saveCustomLetters(updated);
-      return updated;
-    });
+    try {
+      await deleteCustomLetter(id);
+      setCustomLetters(prev => prev.filter(l => l.id !== id));
+    } catch (err) {
+      console.error('Failed to delete letter:', err);
+    }
   }
 
   function startLongPress(letter) {
@@ -384,6 +374,9 @@ export default function LetterPage() {
       </div>
 
       <div className="letters-board">
+        {loading && (
+          <div className="letters-loading">Đang tải thư... 💌</div>
+        )}
         {filtered.map(letter => (
           <div
             key={letter.id}
