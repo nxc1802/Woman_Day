@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/letter.css';
-import { fetchCustomLetters, insertCustomLetter, deleteCustomLetter } from '../lib/supabase';
+import { fetchCustomLetters, insertCustomLetter, deleteCustomLetter, updateCustomLetter } from '../lib/supabase';
 
 const CARD_COLORS = [
   { bg: '#fce7f3', text: '#9d174d' },
@@ -128,7 +128,7 @@ Giờ nghĩ lại, nếu không được gặp gỡ và yêu thương em :))) th
 ];
 
 /* ---- Read Modal ---- */
-function LetterModal({ letter, onClose }) {
+function LetterModal({ letter, onClose, onEdit }) {
   const overlayRef = useRef(null);
   const cardRef    = useRef(null);
 
@@ -175,8 +175,123 @@ function LetterModal({ letter, onClose }) {
         </div>
 
         <div className="modal-footer">
+          {letter.isCustom && (
+            <button className="modal-edit-btn" onClick={() => { onClose(); onEdit(letter); }}>
+              ✏️ Sửa thư
+            </button>
+          )}
           <span>with love ❤️</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Edit Letter Form Modal ---- */
+function EditLetterModal({ letter, onSave, onClose }) {
+  const overlayRef = useRef(null);
+  const formRef    = useRef(null);
+  const [form, setForm] = useState({
+    author:  letter.author,
+    icon:    letter.icon   || '💊',
+    tag:     letter.tag    || '',
+    title:   letter.title  || '',
+    pill:    letter.pill   || '',
+    content: letter.content || '',
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.25 });
+    gsap.from(formRef.current, { opacity: 0, scale: 0.92, y: 30, duration: 0.4, ease: 'back.out(1.5)' });
+  }, []);
+
+  function close() {
+    gsap.to(overlayRef.current, { opacity: 0, duration: 0.22, onComplete: onClose });
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.content.trim() || saving) return;
+    setSaving(true);
+    const updated = {
+      ...letter,
+      author:    form.author,
+      icon:      form.icon,
+      tag:       form.tag.trim() || (form.author === 'Anh' ? 'Từ anh' : 'Từ em'),
+      title:     form.title.trim(),
+      size:      form.content.length > 150 ? 'large' : form.content.length > 80 ? 'medium' : 'small',
+      pill:      form.pill.trim() || null,
+      content:   form.content.trim(),
+    };
+    await onSave(updated);
+    close();
+  }
+
+  return (
+    <div className="letter-overlay" ref={overlayRef} onClick={close}>
+      <div className="add-letter-modal" ref={formRef} onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={close}>✕</button>
+        <h2 className="add-modal-title">✏️ Sửa lá thư</h2>
+
+        <form className="add-letter-form" onSubmit={handleSubmit}>
+          <div className="form-field">
+            <label className="form-label">Ai đang viết?</label>
+            <div className="author-selector">
+              {['Anh', 'Em'].map(a => (
+                <button key={a} type="button"
+                  className={`author-btn ${form.author === a ? (a === 'Anh' ? 'selected-anh' : 'selected-em') : ''}`}
+                  onClick={() => setForm(f => ({ ...f, author: a }))}
+                >
+                  {a === 'Anh' ? '💙' : '🩷'} {a}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Icon</label>
+            <div className="icon-picker">
+              {ICON_OPTIONS.map(icon => (
+                <button key={icon} type="button"
+                  className={`icon-btn ${form.icon === icon ? 'selected' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, icon }))}
+                >{icon}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Nhãn (tag)</label>
+            <input className="form-input" placeholder="Ví dụ: Viên thuốc #5, Kỷ niệm..."
+              value={form.tag} onChange={e => setForm(f => ({ ...f, tag: e.target.value }))} maxLength={40} />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Tiêu đề *</label>
+            <input className="form-input" placeholder="Tựa đề lá thư..."
+              value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} maxLength={60} required />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Viên thuốc (câu em/anh đã viết — nếu có)</label>
+            <input className="form-input" placeholder="Dán câu từ lọ thuốc vào đây..."
+              value={form.pill} onChange={e => setForm(f => ({ ...f, pill: e.target.value }))} />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">Nội dung / Phản hồi *</label>
+            <textarea className="form-textarea" placeholder="Viết điều bạn muốn nói..."
+              value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={5} required />
+          </div>
+
+          <div className="form-actions">
+            <button type="button" className="btn-cancel" onClick={close}>Hủy</button>
+            <button type="submit" className="btn-save" disabled={saving}>
+              {saving ? 'Đang lưu...' : 'Lưu thay đổi 💾'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -288,11 +403,12 @@ function AddLetterModal({ onAdd, onClose }) {
 
 /* ---- Main Page ---- */
 export default function LetterPage() {
-  const [customLetters, setCustomLetters] = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [openLetter, setOpenLetter]       = useState(null);
-  const [showAddForm, setShowAddForm]     = useState(false);
-  const [filterAuthor, setFilterAuthor]   = useState('all');
+  const [customLetters, setCustomLetters]     = useState([]);
+  const [loading, setLoading]                 = useState(true);
+  const [openLetter, setOpenLetter]           = useState(null);
+  const [editingLetter, setEditingLetter]     = useState(null);
+  const [showAddForm, setShowAddForm]         = useState(false);
+  const [filterAuthor, setFilterAuthor]       = useState('all');
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const longPressTimer = useRef(null);
@@ -315,6 +431,15 @@ export default function LetterPage() {
       setCustomLetters(prev => [...prev, saved]);
     } catch (err) {
       console.error('Failed to save letter:', err);
+    }
+  }
+
+  async function handleEditSave(updated) {
+    try {
+      await updateCustomLetter(updated.id, updated);
+      setCustomLetters(prev => prev.map(l => l.id === updated.id ? updated : l));
+    } catch (err) {
+      console.error('Failed to update letter:', err);
     }
   }
 
@@ -429,8 +554,9 @@ export default function LetterPage() {
         </div>
       </div>
 
-      {openLetter  && <LetterModal letter={openLetter}  onClose={() => setOpenLetter(null)} />}
-      {showAddForm && <AddLetterModal onAdd={handleAdd} onClose={() => setShowAddForm(false)} />}
+      {openLetter    && <LetterModal letter={openLetter} onClose={() => setOpenLetter(null)} onEdit={setEditingLetter} />}
+      {showAddForm   && <AddLetterModal onAdd={handleAdd} onClose={() => setShowAddForm(false)} />}
+      {editingLetter && <EditLetterModal letter={editingLetter} onSave={handleEditSave} onClose={() => setEditingLetter(null)} />}
     </div>
   );
 }

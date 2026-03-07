@@ -60,3 +60,21 @@ export async function deleteCustomLetter(id) {
   const { error } = await supabase.from(TABLE).delete().eq('id', id);
   if (error) throw error;
 }
+
+/** Update editable fields of an existing letter */
+export async function updateCustomLetter(id, fields) {
+  const { error } = await supabase
+    .from(TABLE)
+    .update({
+      author:     fields.author,
+      icon:       fields.icon,
+      tag:        fields.tag,
+      title:      fields.title,
+      text_color: fields.textColor,
+      size:       fields.size,
+      pill:       fields.pill ?? null,
+      content:    fields.content,
+    })
+    .eq('id', id);
+  if (error) throw error;
+}
