@@ -36,5 +36,20 @@ export const PASSWORDS = [
     password: 'nguyenxuancuong',
     hint: 'Họ và tên của anh... viết liền, không dấu 🌺',
   },
-  
+  {
+    password: '19092025',
+    hint: 'Ngày đầu tiên mình nhắn tin cho nhau 💕',
+  },
+  {
+    password: 'baobinh',
+    hint: 'Cung hoàng đạo của chúng ta... viết liền, không dấu 🌺',
+  },
+  {
+    password: 'thangchonggia',
+    hint: 'Em gọi anh là gì mà anh chấm 9đ nhưng em gọi với bạn bè em thì anh chấm 10đ... viết liền, không dấu 🌺',
+  },
+  {
+    password: '2',
+    hint: 'Mỗi ngày uống ít nhất bao nhiêu bình nước? 💦',
+  },
 ];

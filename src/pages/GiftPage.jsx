@@ -248,7 +248,7 @@ export default function GiftPage() {
         <div className="gift-card glass-card" ref={cardRef}>
           <span className="gift-card-top animate-heartbeat">🎁</span>
           <h1 className="gift-title">Happy Women's Day</h1>
-          <p className="gift-date">March 8, 2025</p>
+          <p className="gift-date">March 8, 2026</p>
           <p className="gift-message">
             This little website is my heart, wrapped up just for you.<br />
             Thank you for being my sunshine every single day. 🌸

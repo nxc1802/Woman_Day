@@ -54,7 +54,7 @@ export default function HomePage() {
       <PetalsBg />
 
       <header className="home-header" ref={headerRef}>
-        <p className="home-date">Happy Women's Day 🌸 — March 8, 2025</p>
+        <p className="home-date">Happy Women's Day 🌸 — March 8, 2026</p>
         <h1 className="page-title home-title">Choose Your Gift</h1>
         <p className="page-subtitle">A little something made with all my love for you</p>
       </header>
