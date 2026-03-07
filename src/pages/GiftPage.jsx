@@ -3,25 +3,32 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/gift.css';
 
-const FALLING_PHOTOS = [
-  '/assets/images/Anh_Hong/IMG_0836.JPG',
-  '/assets/images/Anh_Hong/IMG_0837.JPG',
-  '/assets/images/Anh_Hong/IMG_0835.JPG',
-  '/assets/images/Anh_Hong/IMG_0574.JPG',
-  '/assets/images/Anh_Hong/IMG_0596.JPG',
-  '/assets/images/Anh_Hong/IMG_0603.JPG',
-  '/assets/images/Anh_Hong/IMG_0951.JPG',
-  '/assets/images/Anh_Hong/IMG_1099.JPG',
-  '/assets/images/Anh_Hong/IMG_1628.JPG',
-  '/assets/images/Anh_Hong/IMG_0570.JPG',
-  '/assets/images/Anh_Hong/IMG_0838.JPG',
-  '/assets/images/Anh_Hong/IMG_0843.JPG',
-  '/assets/images/Anh_Hong/IMG_1634.JPG',
-  '/assets/images/Chung_minh/IMG_0716.JPG',
-  '/assets/images/Chung_minh/IMG_0909.JPG',
-  '/assets/images/Chung_minh/IMG_1739.jpeg',
-  '/assets/images/Chung_minh/IMG_1836.jpeg',
-];
+/* All 65 solo photos — random non-repeating queue */
+const ALL_PHOTOS = [
+  'IMG_0570','IMG_0571','IMG_0572','IMG_0573','IMG_0574',
+  'IMG_0575','IMG_0576','IMG_0577','IMG_0594','IMG_0595',
+  'IMG_0596','IMG_0597','IMG_0598','IMG_0599','IMG_0600',
+  'IMG_0601','IMG_0602','IMG_0603','IMG_0604','IMG_0605',
+  'IMG_0606','IMG_0607','IMG_0814','IMG_0817','IMG_0819',
+  'IMG_0820','IMG_0821','IMG_0823','IMG_0830','IMG_0833',
+  'IMG_0834','IMG_0835','IMG_0836','IMG_0837','IMG_0838',
+  'IMG_0839','IMG_0840','IMG_0841','IMG_0842','IMG_0843',
+  'IMG_0844','IMG_0845','IMG_0846','IMG_0847','IMG_0848',
+  'IMG_0851','IMG_0852','IMG_0951','IMG_0952','IMG_0953',
+  'IMG_0955','IMG_0956','IMG_0957','IMG_0966','IMG_1099',
+  'IMG_1100','IMG_1628','IMG_1633','IMG_1634','IMG_1647',
+  'IMG_1648','IMG_1649','IMG_1839','IMG_1842','IMG_1843',
+].map(n => `/assets/images/Anh_Hong/${n}.JPG`);
+
+/* Queue that cycles through all photos in shuffled order, never repeating
+   until every photo has been shown once */
+let photoQueue = [];
+function nextPhoto() {
+  if (photoQueue.length === 0) {
+    photoQueue = [...ALL_PHOTOS].sort(() => Math.random() - 0.5);
+  }
+  return photoQueue.pop();
+}
 
 const LOVE_MESSAGES = [
   'I Love You ❤️',
@@ -52,6 +59,7 @@ let idCounter = 0;
 function genId() { return ++idCounter; }
 
 function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randomPickSrc() { return nextPhoto(); }
 
 /* ---- Single falling item (photo or message) ---- */
 function FallingItem({ item, onEnd, onPhotoClick }) {
@@ -151,7 +159,7 @@ function SnowCanvas() {
 /* ---- Main Gift Page ---- */
 export default function GiftPage() {
   const [fallingItems, setFallingItems] = useState([]);
-  const [centerPhoto, setCenterPhoto] = useState(FALLING_PHOTOS[0]);
+  const [centerPhoto, setCenterPhoto] = useState(() => ALL_PHOTOS[Math.floor(Math.random() * ALL_PHOTOS.length)]);
   const [centerFlash, setCenterFlash] = useState(false);
   const cardRef = useRef(null);
   const frameRef = useRef(null);
@@ -165,26 +173,26 @@ export default function GiftPage() {
   // Spawn falling items
   useEffect(() => {
     function spawn() {
-      const isPhoto = Math.random() > 0.45;
+      const isPhoto = Math.random() > 0.38;   // ~62% photos
       setFallingItems(prev => {
-        if (prev.length >= 14) return prev;
+        if (prev.length >= 22) return prev;   // higher cap
         return [...prev, {
           id: genId(),
           type: isPhoto ? 'photo' : 'message',
-          src: isPhoto ? randomPick(FALLING_PHOTOS) : undefined,
+          src: isPhoto ? randomPickSrc() : undefined,
           content: !isPhoto ? randomPick(LOVE_MESSAGES) : undefined,
           color: !isPhoto ? randomPick(MSG_COLORS) : undefined,
-          left: `${3 + Math.random() * 90}%`,
+          left: `${2 + Math.random() * 92}%`,
           duration: 7 + Math.random() * 6,
-          delay: Math.random() * 0.4,
-          rot: (Math.random() - 0.5) * 20,
-          rot2: (Math.random() - 0.5) * 30,
+          delay: Math.random() * 0.3,
+          rot: (Math.random() - 0.5) * 22,
+          rot2: (Math.random() - 0.5) * 32,
         }];
       });
     }
-    const timer = setInterval(spawn, 1400);
-    // Seed initial items
-    setTimeout(() => { for (let i = 0; i < 4; i++) setTimeout(spawn, i * 300); }, 1800);
+    const timer = setInterval(spawn, 850);    // faster spawn
+    // Seed more items immediately
+    setTimeout(() => { for (let i = 0; i < 8; i++) setTimeout(spawn, i * 200); }, 600);
     return () => clearInterval(timer);
   }, []);
 
