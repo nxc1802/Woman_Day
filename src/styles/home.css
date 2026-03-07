@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 3rem 2rem 3rem;
+  padding: 3rem 2rem 0;
   gap: 0;
   position: relative;
 }
@@ -31,23 +31,21 @@
 .home-date { font-size: 0.76rem; color: rgba(236,72,153,0.55); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 0.8rem; }
 .home-title { margin-bottom: 0.5rem; }
 
-/* Grid — 3 col desktop for 5 cards (3+2) */
+/* Grid — 2 columns */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.4rem;
-  width: 100%; max-width: 900px;
+  width: 100%; max-width: 760px;
   position: relative; z-index: 2;
   margin-bottom: 2.8rem;
 }
-/* Last row: 2 cards centered */
-.menu-card:nth-child(4),
-.menu-card:nth-child(5) {
-  /* intentionally empty — handled by implicit grid */
+/* 5th card (odd last child) centered spanning both columns */
+.menu-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 0.7rem);
+  justify-self: center;
 }
-/* If 5 items in 3-col grid → row 2 has 2 items, auto-centered via justify-items */
-.menu-grid { justify-items: center; }
-.menu-card { width: 100%; }
 
 /* Card */
 .menu-card {
@@ -100,17 +98,21 @@
 .card-special:hover { border-color: var(--rose); box-shadow: 0 20px 60px rgba(236,72,153,0.38); }
 .card-badge { position: absolute; top: 0.9rem; right: 0.9rem; background: linear-gradient(135deg, var(--rose-deep), var(--rose)); color: white; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; padding: 0.24rem 0.65rem; border-radius: 50px; text-transform: uppercase; }
 
-/* Footer */
-.home-footer { text-align: center; color: rgba(192,132,168,0.45); font-size: 0.83rem; letter-spacing: 0.08em; position: relative; z-index: 2; }
-
-@media (max-width: 900px) {
-  .menu-grid { grid-template-columns: repeat(2, 1fr); max-width: 620px; }
-  /* 5th card on its own row: span full width */
-  .menu-card:last-child:nth-child(5) { grid-column: span 2; max-width: 280px; }
+/* Footer — pinned to bottom of flex column */
+.home-footer {
+  text-align: center;
+  color: rgba(192,132,168,0.45);
+  font-size: 0.83rem;
+  letter-spacing: 0.08em;
+  position: relative;
+  z-index: 2;
+  margin-top: auto;
+  padding-bottom: 1.5rem;
 }
+
 @media (max-width: 600px) {
   .menu-grid { grid-template-columns: 1fr; max-width: 400px; gap: 1rem; }
-  .menu-card:last-child:nth-child(5) { grid-column: span 1; max-width: 100%; }
+  .menu-card:last-child:nth-child(odd) { grid-column: auto; max-width: 100%; justify-self: auto; }
   .menu-card { flex-direction: row; align-items: center; justify-content: flex-start; padding: 1.8rem 1.4rem; gap: 1.2rem; }
   .menu-card:hover { transform: translateX(5px) scale(1.01); }
   .card-icon { font-size: 2.4rem; margin-bottom: 0; flex-shrink: 0; }

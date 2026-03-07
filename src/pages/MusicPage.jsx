@@ -4,11 +4,35 @@ import { Howl } from 'howler';
 import gsap from 'gsap';
 import '../styles/music.css';
 
+/* Pool of solo photos — shuffled once at module load, no repeats across songs */
+const ANH_HONG_POOL = [
+  'IMG_0570.JPG','IMG_0571.JPG','IMG_0572.JPG','IMG_0573.JPG','IMG_0574.JPG',
+  'IMG_0575.JPG','IMG_0576.JPG','IMG_0577.JPG','IMG_0594.JPG','IMG_0595.JPG',
+  'IMG_0596.JPG','IMG_0597.JPG','IMG_0598.JPG','IMG_0599.JPG','IMG_0600.JPG',
+  'IMG_0601.JPG','IMG_0602.JPG','IMG_0603.JPG','IMG_0604.JPG','IMG_0605.JPG',
+  'IMG_0606.JPG','IMG_0607.JPG','IMG_0814.JPG','IMG_0817.JPG','IMG_0819.JPG',
+  'IMG_0820.JPG','IMG_0821.JPG','IMG_0823.JPG','IMG_0830.JPG','IMG_0833.JPG',
+  'IMG_0834.JPG','IMG_0835.JPG','IMG_0836.JPG','IMG_0837.JPG','IMG_0838.JPG',
+  'IMG_0839.JPG','IMG_0840.JPG','IMG_0841.JPG','IMG_0842.JPG','IMG_0843.JPG',
+  'IMG_0844.JPG','IMG_0845.JPG','IMG_0846.JPG','IMG_0847.JPG','IMG_0848.JPG',
+  'IMG_0851.JPG','IMG_0852.JPG','IMG_0951.JPG','IMG_0952.JPG','IMG_0953.JPG',
+  'IMG_0955.JPG','IMG_0956.JPG','IMG_0957.JPG','IMG_0966.JPG','IMG_1099.JPG',
+  'IMG_1100.JPG','IMG_1628.JPG','IMG_1633.JPG','IMG_1634.JPG','IMG_1647.JPG',
+  'IMG_1648.JPG','IMG_1649.JPG','IMG_1839.JPG','IMG_1842.JPG','IMG_1843.JPG',
+];
+
+function pickUniqueCovers(count) {
+  const shuffled = [...ANH_HONG_POOL].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map(f => `/assets/images/Anh_Hong/${f}`);
+}
+
+const COVERS = pickUniqueCovers(4);
+
 const SONGS = [
-  { id: 0, title: 'Chiếc Khăn Gió Ấm', artist: 'Khánh Phương x meChill', cover: '/assets/images/thumnails_music/IMG_0834.JPG', src: '/assets/music/Chiếc Khăn Gió Ấm (Lofi Lyrics) - Khánh Phương x meChill _ gửi cho em đêm lung linh Hot  Tiktok - meChill.mp3' },
-  { id: 1, title: 'Hôn Lễ Của Em', artist: 'Hiền Hồ', cover: '/assets/images/thumnails_music/IMG_0835.JPG', src: '/assets/music/HÔN LỄ CỦA EM - HIỀN HỒ  Solo Version  Sáng tác Trọng Nhân - Hiền Hồ Official.mp3' },
-  { id: 2, title: 'Thằng Điên', artist: 'JustaTee x Phương Ly', cover: '/assets/images/thumnails_music/IMG_0836.JPG', src: '/assets/music/THẰNG ĐIÊN  JUSTATEE x PHƯƠNG LY  OFFICIAL MV - JustaTeeMusic.mp3' },
-  { id: 3, title: 'Ai Đưa Em Về', artist: 'TIA ft. Lê Thiện Hiếu', cover: '/assets/images/thumnails_music/IMG_0837.JPG', src: '/assets/music/TIA - Ai Đưa Em Về  Official M_V  Ft. Lê Thiện Hiếu (Low Cortisol Song) - TIA.mp3' },
+  { id: 0, title: 'Chiếc Khăn Gió Ấm', artist: 'Khánh Phương x meChill', cover: COVERS[0], src: '/assets/music/Chiếc Khăn Gió Ấm (Lofi Lyrics) - Khánh Phương x meChill _ gửi cho em đêm lung linh Hot  Tiktok - meChill.mp3' },
+  { id: 1, title: 'Hôn Lễ Của Em',      artist: 'Hiền Hồ',                cover: COVERS[1], src: '/assets/music/HÔN LỄ CỦA EM - HIỀN HỒ  Solo Version  Sáng tác Trọng Nhân - Hiền Hồ Official.mp3' },
+  { id: 2, title: 'Thằng Điên',         artist: 'JustaTee x Phương Ly',   cover: COVERS[2], src: '/assets/music/THẰNG ĐIÊN  JUSTATEE x PHƯƠNG LY  OFFICIAL MV - JustaTeeMusic.mp3' },
+  { id: 3, title: 'Ai Đưa Em Về',       artist: 'TIA ft. Lê Thiện Hiếu',  cover: COVERS[3], src: '/assets/music/TIA - Ai Đưa Em Về  Official M_V  Ft. Lê Thiện Hiếu (Low Cortisol Song) - TIA.mp3' },
 ];
 
 function formatTime(s) {
@@ -119,7 +143,7 @@ export default function MusicPage() {
         <div className={`np-vinyl ${isPlaying ? 'playing' : ''}`}>
           <div className="vinyl-outer">
             <div className="vinyl-inner">
-              <img src={currentSong?.cover || '/assets/images/thumnails_music/IMG_0834.JPG'} alt="cover" />
+              <img src={currentSong?.cover || COVERS[0]} alt="cover" />
             </div>
           </div>
           {isPlaying && <>
