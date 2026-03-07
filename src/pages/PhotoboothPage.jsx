@@ -3,16 +3,14 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/photobooth.css';
 
-/* Each image is already a complete photobooth strip (4-frame print) */
+/* Each image is a complete 4-frame photobooth strip with its own border & branding */
 const PHOTOS = [
-  '/assets/images/photobooth/IMG_0718.JPG',
-  '/assets/images/photobooth/IMG_0859.JPG',
-  '/assets/images/photobooth/IMG_0860.JPG',
-  '/assets/images/photobooth/IMG_0861.JPG',
-  '/assets/images/photobooth/IMG_0862.JPG',
-  '/assets/images/photobooth/IMG_0909.JPG',
-  '/assets/images/photobooth/IMG_0910.JPG',
-  '/assets/images/photobooth/IMG_0911.JPG',
+  '/assets/images/photobooth/z7596350399168_6f295dc09637e7ff5aad72d3a37329ad.jpg',
+  '/assets/images/photobooth/z7596350431285_e097b361d32bd6eab07007bd736b416f.jpg',
+  '/assets/images/photobooth/z7596350434610_35ac4c79a3807bd29e703a09b83dace4.jpg',
+  '/assets/images/photobooth/z7596350442471_01e2c9786ea4499d3d7fbb6fe7386bc3.jpg',
+  '/assets/images/photobooth/z7596350453797_179ff7812008523ac95465478257788e.jpg',
+  '/assets/images/photobooth/z7596350465181_ef182412c340a828157f3c17d083e141.jpg',
 ];
 
 /* Slight rotation for each strip — alternating for a scattered look */
@@ -74,14 +72,8 @@ export default function PhotoboothPage() {
             style={{ '--rot': `${ROTATIONS[i % ROTATIONS.length]}deg` }}
             onClick={() => setLightbox(src)}
           >
-            {/* Tape strip at top */}
-            <div className="strip-tape" />
-            {/* The photobooth print */}
-            <div className="strip-print">
-              <img src={src} alt={`Photobooth ${i + 1}`} loading="lazy" />
-            </div>
-            {/* Caption area at bottom */}
-            <div className="strip-caption">📸 {String(i + 1).padStart(2, '0')}</div>
+            {/* Clean minimal frame — image already has its own border & branding */}
+            <img src={src} alt={`Photobooth ${i + 1}`} loading="lazy" className="strip-img" />
             <div className="strip-shine" />
           </div>
         ))}

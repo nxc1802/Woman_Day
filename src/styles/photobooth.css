@@ -57,100 +57,51 @@
 /* ---- Single photobooth strip ---- */
 .pb-strip {
   position: relative;
-  /* White photobooth paper background */
-  background: #fffdf9;
-  border-radius: 4px;
-  padding: 0.5rem 0.5rem 1.8rem;
+  /* Thin uniform border — like a freshly printed photo */
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 5px;           /* thin equal border on all sides */
   cursor: pointer;
   transform: rotate(var(--rot, 0deg));
   transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1),
               box-shadow 0.4s ease;
   box-shadow:
-    0 6px 24px rgba(0,0,0,0.32),
-    0 2px 6px rgba(0,0,0,0.18),
-    inset 0 0 0 1px rgba(0,0,0,0.04);
-  width: 180px;
+    0 8px 28px rgba(0,0,0,0.30),
+    0 2px 6px rgba(0,0,0,0.16);
+  /* width adapts to image — no fixed width so ratio is preserved */
   flex-shrink: 0;
 }
 .pb-strip:hover {
-  transform: rotate(0deg) scale(1.06) translateY(-8px);
+  transform: rotate(0deg) scale(1.05) translateY(-10px);
   box-shadow:
-    0 18px 56px rgba(0,0,0,0.42),
-    0 4px 12px rgba(236,72,153,0.2);
+    0 20px 60px rgba(0,0,0,0.42),
+    0 4px 12px rgba(236,72,153,0.18);
   z-index: 10;
 }
 
-/* Tape at top */
-.strip-tape {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 44px;
-  height: 18px;
-  background: rgba(249,168,201,0.45);
-  border-radius: 2px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-  z-index: 3;
-}
-.strip-tape::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0px,
-    transparent 3px,
-    rgba(255,255,255,0.4) 3px,
-    rgba(255,255,255,0.4) 4px
-  );
-  border-radius: 2px;
-}
-
-/* The photo itself */
-.strip-print {
-  width: 100%;
-  border-radius: 2px;
-  overflow: hidden;
-  background: #111;
-  /* Each photobooth image is taller than wide (strip format) */
-  line-height: 0;
-}
-.strip-print img {
-  width: 100%;
-  height: auto;
+/* The strip image — displayed at natural proportions */
+.strip-img {
   display: block;
+  /* Fix display height so strips are consistent in the grid */
+  height: 480px;
+  width: auto;
+  border-radius: 3px;
+  /* Subtle scale on hover */
   transition: transform 0.4s ease;
 }
-.pb-strip:hover .strip-print img {
-  transform: scale(1.03);
-}
+.pb-strip:hover .strip-img { transform: scale(1.02); }
 
-/* Caption below photo */
-.strip-caption {
-  position: absolute;
-  bottom: 0.35rem;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: rgba(26,10,24,0.4);
-  font-family: monospace;
-}
-
-/* Gloss shine overlay */
+/* Gloss shine overlay — very subtle so it doesn't obscure the image's own frame */
 .strip-shine {
   position: absolute;
-  inset: 0;
+  inset: 5px;             /* stays inside the padding */
   background: linear-gradient(
-    135deg,
-    rgba(255,255,255,0.22) 0%,
-    transparent 55%
+    140deg,
+    rgba(255,255,255,0.14) 0%,
+    transparent 50%
   );
   pointer-events: none;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* ============================================
@@ -210,8 +161,11 @@
 /* ============================================
    RESPONSIVE
    ============================================ */
+@media (max-width: 900px) {
+  .strip-img { height: 400px; }
+}
 @media (max-width: 600px) {
-  .pb-gallery  { gap: 2rem 1.2rem; }
-  .pb-strip    { width: 140px; }
+  .pb-gallery  { gap: 1.5rem 1rem; }
+  .strip-img   { height: 300px; }
   .photobooth-page { padding: 4.5rem 1rem 3rem; }
 }
