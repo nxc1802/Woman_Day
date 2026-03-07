@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/gallery.css';
@@ -46,68 +46,85 @@ const ALL_PHOTOS = [
   { src: '/assets/images/Chung_minh/IMG_1842.jpeg', caption: 'Still falling ❤️', type: 'couple' },
 ];
 
-const KB_ANIMS = ['kenBurns1', 'kenBurns2', 'kenBurns3'];
+/* Shuffle an array deterministically by offset */
+function rotate(arr, offset) {
+  const n = arr.length;
+  return [...arr.slice(offset % n), ...arr.slice(0, offset % n)];
+}
+
+/* Single marquee row */
+function MarqueeRow({ photos, direction = 'left', speed = 40, rowHeight = 220, onPhotoClick }) {
+  // Duplicate to create seamless infinite loop
+  const doubled = [...photos, ...photos];
+  const dur = `${(photos.length * speed)}s`;
+  const animName = direction === 'left' ? 'marqueeLeft' : 'marqueeRight';
+
+  return (
+    <div className="marquee-row" style={{ height: `${rowHeight}px` }}>
+      <div
+        className="marquee-track"
+        style={{ animationDuration: dur, animationName: animName }}
+      >
+        {doubled.map((photo, i) => (
+          <div
+            key={`${photo.src}-${i}`}
+            className="marquee-photo"
+            style={{ height: `${rowHeight}px` }}
+            onClick={() => onPhotoClick(photo)}
+          >
+            <img src={photo.src} alt={photo.caption} loading="lazy" />
+            <div className="marquee-overlay">
+              <p className="marquee-caption">{photo.caption}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function GalleryPage() {
   const [filter, setFilter] = useState('all');
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [fading, setFading] = useState(false);
-  const [lightbox, setLightbox] = useState(null); // index or null
-  const autoTimer = useRef(null);
+  const [lightbox, setLightbox] = useState(null);
+  const [lbIdx, setLbIdx] = useState(0);
   const headerRef = useRef(null);
-  const carouselRef = useRef(null);
+  const stripRef = useRef(null);
 
   const photos = useMemo(() =>
     filter === 'all' ? ALL_PHOTOS : ALL_PHOTOS.filter(p => p.type === filter),
   [filter]);
 
-  // Ensure currentIdx is valid after filter change
-  const safeIdx = Math.min(currentIdx, photos.length - 1);
+  // Split photos into 3 rows with different starting offsets
+  const row1 = useMemo(() => rotate(photos, 0), [photos]);
+  const row2 = useMemo(() => rotate(photos, Math.floor(photos.length / 3)), [photos]);
+  const row3 = useMemo(() => rotate(photos, Math.floor(photos.length * 2 / 3)), [photos]);
 
-  const goTo = useCallback((idx) => {
-    setFading(true);
-    setTimeout(() => {
-      setCurrentIdx((idx + photos.length) % photos.length);
-      setFading(false);
-    }, 450);
-  }, [photos.length]);
+  // Open lightbox
+  const openLightbox = useCallback((photo) => {
+    const idx = photos.findIndex(p => p.src === photo.src);
+    setLbIdx(idx >= 0 ? idx : 0);
+    setLightbox(true);
+  }, [photos]);
 
-  const goNext = useCallback(() => goTo(safeIdx + 1), [goTo, safeIdx]);
-  const goPrev = useCallback(() => goTo(safeIdx - 1), [goTo, safeIdx]);
+  const closeLightbox = useCallback(() => setLightbox(null), []);
 
-  // Auto-advance
+  // Keyboard nav
   useEffect(() => {
-    autoTimer.current = setInterval(goNext, 4500);
-    return () => clearInterval(autoTimer.current);
-  }, [goNext]);
-
-  // Reset on filter change
-  useEffect(() => { setCurrentIdx(0); }, [filter]);
-
-  // Keyboard
-  useEffect(() => {
+    if (!lightbox) return;
     function onKey(e) {
-      if (lightbox !== null) {
-        if (e.key === 'ArrowRight') setLightbox(i => (i + 1) % photos.length);
-        if (e.key === 'ArrowLeft') setLightbox(i => (i - 1 + photos.length) % photos.length);
-        if (e.key === 'Escape') setLightbox(null);
-        return;
-      }
-      if (e.key === 'ArrowRight') goNext();
-      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') setLbIdx(i => (i + 1) % photos.length);
+      if (e.key === 'ArrowLeft') setLbIdx(i => (i - 1 + photos.length) % photos.length);
+      if (e.key === 'Escape') closeLightbox();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [lightbox, photos.length, goNext, goPrev]);
+  }, [lightbox, photos.length, closeLightbox]);
 
   // GSAP entrance
   useEffect(() => {
     gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.8 });
-    gsap.from(carouselRef.current, { opacity: 0, scale: 0.95, duration: 0.9, delay: 0.3, ease: 'power2.out' });
+    gsap.from(stripRef.current, { opacity: 0, duration: 1, delay: 0.4 });
   }, []);
-
-  const photo = photos[safeIdx] ?? photos[0];
-  const kbAnim = KB_ANIMS[safeIdx % KB_ANIMS.length];
 
   return (
     <div className="gallery-page">
@@ -119,9 +136,8 @@ export default function GalleryPage() {
         <h1 className="page-title">Our Memories</h1>
         <p className="page-subtitle">{photos.length} precious moments</p>
 
-        {/* Filter tabs */}
         <div className="gallery-tabs">
-          {[['all','All ❤️'],['solo','Hong 🌸'],['couple','Us 💕']].map(([val, label]) => (
+          {[['all','All ❤️'], ['solo','Hong 🌸'], ['couple','Us 💕']].map(([val, label]) => (
             <button key={val}
               className={`tab-btn ${filter === val ? 'active' : ''}`}
               onClick={() => setFilter(val)}
@@ -130,52 +146,27 @@ export default function GalleryPage() {
         </div>
       </header>
 
-      {/* Carousel */}
-      <div className="carousel-wrap" ref={carouselRef}>
-        <div className={`carousel-stage ${fading ? 'fading' : ''}`}>
-          {photo && (
-            <img
-              key={photo.src}
-              src={photo.src}
-              alt={photo.caption}
-              className="carousel-img"
-              style={{ animationName: kbAnim }}
-              onClick={() => setLightbox(safeIdx)}
-            />
-          )}
-          {/* Caption */}
-          <div className={`carousel-caption ${fading ? 'fading' : ''}`}>
-            <p>{photo?.caption}</p>
-          </div>
-          {/* Counter */}
-          <div className="carousel-counter">
-            {safeIdx + 1} / {photos.length}
-          </div>
-        </div>
-
-        {/* Prev / Next arrows */}
-        <button className="carousel-arrow arrow-left" onClick={() => { clearInterval(autoTimer.current); goPrev(); }}>‹</button>
-        <button className="carousel-arrow arrow-right" onClick={() => { clearInterval(autoTimer.current); goNext(); }}>›</button>
-
-        {/* Dot indicators */}
-        <div className="carousel-dots">
-          {photos.map((_, i) => (
-            <button key={i} className={`dot ${i === safeIdx ? 'active' : ''}`}
-              onClick={() => { clearInterval(autoTimer.current); goTo(i); }} />
-          ))}
-        </div>
+      {/* Infinite marquee strips */}
+      <div className="marquee-strips" ref={stripRef}>
+        <MarqueeRow photos={row1} direction="left"  speed={5} rowHeight={230} onPhotoClick={openLightbox} />
+        <MarqueeRow photos={row2} direction="right" speed={6} rowHeight={200} onPhotoClick={openLightbox} />
+        <MarqueeRow photos={row3} direction="left"  speed={4.5} rowHeight={215} onPhotoClick={openLightbox} />
       </div>
 
+      {/* Footer hint */}
+      <p className="gallery-hint">Click any photo to view full size ✨</p>
+
       {/* Lightbox */}
-      {lightbox !== null && (
-        <div className="gallery-lightbox" onClick={() => setLightbox(null)}>
-          <button className="lb-close" onClick={() => setLightbox(null)}>✕</button>
-          <button className="lb-nav lb-prev" onClick={e => { e.stopPropagation(); setLightbox(i => (i - 1 + photos.length) % photos.length); }}>‹</button>
+      {lightbox && (
+        <div className="gallery-lightbox" onClick={closeLightbox}>
+          <button className="lb-close" onClick={closeLightbox}>✕</button>
+          <button className="lb-nav lb-prev" onClick={e => { e.stopPropagation(); setLbIdx(i => (i - 1 + photos.length) % photos.length); }}>‹</button>
           <div className="lb-img-wrap" onClick={e => e.stopPropagation()}>
-            <img src={photos[lightbox]?.src} alt={photos[lightbox]?.caption} />
-            <p className="lb-caption">{photos[lightbox]?.caption}</p>
+            <img src={photos[lbIdx]?.src} alt={photos[lbIdx]?.caption} />
+            <p className="lb-caption">{photos[lbIdx]?.caption}</p>
+            <p className="lb-counter">{lbIdx + 1} / {photos.length}</p>
           </div>
-          <button className="lb-nav lb-next" onClick={e => { e.stopPropagation(); setLightbox(i => (i + 1) % photos.length); }}>›</button>
+          <button className="lb-nav lb-next" onClick={e => { e.stopPropagation(); setLbIdx(i => (i + 1) % photos.length); }}>›</button>
         </div>
       )}
     </div>
