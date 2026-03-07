@@ -21,19 +21,19 @@ export const PASSWORDS = [
     hint: 'Ngày mình quen nhau 🥺',
   },
   {
-    password: 'iloveyou',
-    hint: 'Ba từ anh hay nói nhất 💕',
+    password: '18022004',
+    hint: 'Ngày sinh nhật của anh 💕',
   },
   {
-    password: '08032025',
-    hint: 'Ngày đặc biệt của em 🌸',
+    password: '06022009',
+    hint: 'Ngày sinh nhật của em 🌸',
   },
   {
-    password: 'honganhoi',
-    hint: 'Tên của em... viết liền, không dấu 🌺',
+    password: 'lethianhhong',
+    hint: 'Họ và tên của em... viết liền, không dấu 🌺',
   },
   {
-    password: 'chongvavo',
-    hint: 'Cách em hay gọi anh :3',
+    password: 'nguyenxuancuong',
+    hint: 'Họ và tên của anh... viết liền, không dấu 🌺',
   },
 ];
