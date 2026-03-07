@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/photobooth.css';
 
+/* Each image is already a complete photobooth strip (4-frame print) */
 const PHOTOS = [
   '/assets/images/photobooth/IMG_0718.JPG',
   '/assets/images/photobooth/IMG_0859.JPG',
@@ -14,100 +15,43 @@ const PHOTOS = [
   '/assets/images/photobooth/IMG_0911.JPG',
 ];
 
-const STRIP_COLORS = [
-  '#fff0f6', '#fce7f3', '#fdf2f8', '#fdf4ff', '#fff1f2',
-  '#fce4ec', '#f3e5f5', '#fce7f3',
-];
+/* Slight rotation for each strip — alternating for a scattered look */
+const ROTATIONS = [-2.5, 1.8, -1.2, 3, -3.5, 2.2, -1.8, 2.8];
 
-function PhotoStrip({ photos, color, label, delay = 0 }) {
-  const [lightbox, setLightbox] = useState(null);
-  const stripRef = useRef(null);
+function Lightbox({ src, onClose }) {
+  const overlayRef = useRef(null);
+  const imgRef     = useRef(null);
 
   useEffect(() => {
-    if (stripRef.current) {
-      gsap.from(stripRef.current, { opacity: 0, y: 50, duration: 0.7, delay, ease: 'back.out(1.3)' });
-    }
-  }, [delay]);
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.2 });
+    gsap.from(imgRef.current,     { opacity: 0, scale: 0.88, duration: 0.35, ease: 'back.out(1.4)' });
+  }, []);
+
+  function close() {
+    gsap.to(overlayRef.current, { opacity: 0, duration: 0.2, onComplete: onClose });
+  }
 
   return (
-    <>
-      <div className="strip-wrapper" ref={stripRef}>
-        <div className="strip-label">{label}</div>
-        <div className="photo-strip" style={{ '--strip-bg': color }}>
-          <div className="strip-holes">
-            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="hole" />)}
-          </div>
-          <div className="strip-frames">
-            {photos.map((src, i) => (
-              <div key={i} className="frame" onClick={() => setLightbox(src)}>
-                <img src={src} alt={`Photobooth ${i + 1}`} loading="lazy" />
-                <div className="frame-shine" />
-              </div>
-            ))}
-          </div>
-          <div className="strip-holes strip-holes-bottom">
-            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="hole" />)}
-          </div>
-        </div>
+    <div className="pb-lightbox" ref={overlayRef} onClick={close}>
+      <div className="pb-lightbox-inner" onClick={e => e.stopPropagation()} ref={imgRef}>
+        <img src={src} alt="Phóng to" />
+        <button className="pb-lb-close" onClick={close}>✕</button>
       </div>
-
-      {lightbox && (
-        <div className="pb-lightbox" onClick={() => setLightbox(null)}>
-          <div className="pb-lightbox-inner">
-            <img src={lightbox} alt="Phóng to" />
-            <button className="pb-lb-close" onClick={() => setLightbox(null)}>✕</button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="pb-empty">
-      <div className="empty-film">
-        <div className="ef-holes">
-          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="ef-hole" />)}
-        </div>
-        <div className="ef-frames">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="ef-frame">
-              <span className="ef-icon">{['📷','🌸','💕','✨'][i]}</span>
-            </div>
-          ))}
-        </div>
-        <div className="ef-holes">
-          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="ef-hole" />)}
-        </div>
-      </div>
-      <p className="empty-title">Chưa có ảnh photobooth nào 📸</p>
-      <p className="empty-hint">
-        Thêm ảnh vào <code>public/assets/images/photobooth/</code><br />
-        rồi cập nhật danh sách trong <code>PhotoboothPage.jsx</code>
-      </p>
     </div>
   );
 }
 
-/* Split photos into strips of 4 */
-function splitIntoStrips(photos, size = 4) {
-  const strips = [];
-  for (let i = 0; i < photos.length; i += size) {
-    strips.push(photos.slice(i, i + size));
-  }
-  return strips;
-}
-
 export default function PhotoboothPage() {
   const headerRef = useRef(null);
-  const hasPhotos = PHOTOS.length > 0;
-  const strips = splitIntoStrips(PHOTOS, 4);
+  const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
-    if (headerRef.current) {
-      gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.8 });
-    }
+    gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.8 });
+    gsap.from('.pb-strip', {
+      opacity: 0, y: 50, rotate: 0,
+      stagger: 0.1, duration: 0.6, delay: 0.3,
+      ease: 'back.out(1.3)',
+    });
   }, []);
 
   return (
@@ -122,27 +66,32 @@ export default function PhotoboothPage() {
         <p className="page-subtitle">Những khoảnh khắc chụp cùng nhau 🎞️</p>
       </div>
 
-      <div className="pb-content">
-        {!hasPhotos ? (
-          <EmptyState />
-        ) : (
-          <div className="strips-grid">
-            {strips.map((stripPhotos, idx) => (
-              <PhotoStrip
-                key={idx}
-                photos={stripPhotos}
-                color={STRIP_COLORS[idx % STRIP_COLORS.length]}
-                label={`Strip #${idx + 1}`}
-                delay={idx * 0.12}
-              />
-            ))}
+      <div className="pb-gallery">
+        {PHOTOS.map((src, i) => (
+          <div
+            key={i}
+            className="pb-strip"
+            style={{ '--rot': `${ROTATIONS[i % ROTATIONS.length]}deg` }}
+            onClick={() => setLightbox(src)}
+          >
+            {/* Tape strip at top */}
+            <div className="strip-tape" />
+            {/* The photobooth print */}
+            <div className="strip-print">
+              <img src={src} alt={`Photobooth ${i + 1}`} loading="lazy" />
+            </div>
+            {/* Caption area at bottom */}
+            <div className="strip-caption">📸 {String(i + 1).padStart(2, '0')}</div>
+            <div className="strip-shine" />
           </div>
-        )}
+        ))}
       </div>
 
       <div className="pb-footer">
         <span className="pb-footer-text">🎞️ Every frame is a memory worth keeping</span>
       </div>
+
+      {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
