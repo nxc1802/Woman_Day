@@ -4,3 +4,5 @@ Thumbs.db
 *.log
 node_modules/
 dist/
+# Root-level assets/ is a duplicate — canonical location is public/assets/
+/assets/
