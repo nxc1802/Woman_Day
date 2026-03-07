@@ -27,7 +27,7 @@
 }
 
 /* Header */
-.home-header { text-align: center; margin-bottom: 2.8rem; position: relative; z-index: 2; margin-top: 1rem; }
+.home-header { text-align: center; margin-bottom: 2.8rem; position: relative; z-index: 2; margin-top: 1rem; padding: 0 1rem; }
 .home-date { font-size: 0.76rem; color: rgba(236,72,153,0.55); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 0.8rem; }
 .home-title { margin-bottom: 0.5rem; }
 

@@ -447,11 +447,19 @@
 @media (max-width: 900px) {
   .letters-board { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 600px) {
-  .letters-board { grid-template-columns: 1fr; max-width: 380px; gap: 2rem 0; }
+@media (max-width: 700px) {
+  .letters-board { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
   .letter-card   { transform: rotate(0deg) !important; }
   .letter-card:hover { transform: scale(1.02) !important; }
-  .letter-page   { padding: 4.5rem 1.5rem 3rem; }
+}
+@media (max-width: 500px) {
+  .letters-board { grid-template-columns: 1fr; max-width: 340px; gap: 1.8rem 0; }
+  .letter-page   { padding: 4rem 1rem 3rem; }
   .letter-modal,
-  .add-letter-modal { padding: 2rem 1.5rem; }
+  .add-letter-modal { padding: 1.6rem 1.2rem; max-height: 92vh; }
+  .modal-title   { font-size: 1.4rem; }
+  .modal-line    { font-size: 0.98rem; }
+  .card-heading  { font-size: 1.15rem; }
+  .form-textarea { rows: 4; }
+  .author-selector { gap: 0.5rem; }
 }

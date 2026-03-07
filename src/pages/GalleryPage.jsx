@@ -43,7 +43,7 @@ const ALL_PHOTOS = [
   { src: '/assets/images/Chung_minh/IMG_1741.jpeg', caption: 'Perfect moments 💖', type: 'couple' },
   { src: '/assets/images/Chung_minh/IMG_1745.jpeg', caption: 'Cherished 🥰', type: 'couple' },
   { src: '/assets/images/Chung_minh/IMG_1750.jpeg', caption: 'Our story 💓', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1842.jpeg', caption: 'Still falling ❤️', type: 'couple' },
+  { src: '/assets/images/Chung_minh/IMG_1746.jpeg', caption: 'Still falling ❤️', type: 'couple' },
 ];
 
 /* Shuffle an array deterministically by offset */

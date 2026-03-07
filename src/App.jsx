@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 import PasswordPage from './pages/PasswordPage';
 import HomePage from './pages/HomePage';
 import MusicPage from './pages/MusicPage';
@@ -14,6 +15,8 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       <Route path="/" element={<PasswordPage />} />
       <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
@@ -23,5 +26,6 @@ export default function App() {
       <Route path="/gift" element={<ProtectedRoute><GiftPage /></ProtectedRoute>} />
       <Route path="/photobooth" element={<ProtectedRoute><PhotoboothPage /></ProtectedRoute>} />
     </Routes>
+    </>
   );
 }

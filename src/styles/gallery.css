@@ -239,10 +239,26 @@
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-  .gallery-page { padding-top: 4rem; gap: 1.5rem; }
-  .marquee-strips { gap: 0.7rem; }
-  .marquee-photo img { min-width: 120px; max-width: 260px; }
-  .lb-nav { width: 42px; height: 42px; font-size: 1.6rem; }
-  .lb-prev { left: 0.4rem; }
-  .lb-next { right: 0.4rem; }
+  .gallery-page { padding-top: 4rem; gap: 1.2rem; }
+  .marquee-strips { gap: 0.6rem; }
+  .marquee-photo img { min-width: 110px; max-width: 220px; }
+  .marquee-caption { font-size: 0.88rem; }
+  .lb-nav { width: 40px; height: 40px; font-size: 1.5rem; }
+  .lb-prev { left: 0.3rem; }
+  .lb-next { right: 0.3rem; }
+  .lb-img-wrap img { max-height: 72vh; }
+}
+
+@media (max-width: 480px) {
+  .gallery-page { padding-top: 3.5rem; gap: 1rem; }
+  .marquee-strips { gap: 0.5rem; }
+  .marquee-photo img { min-width: 90px; max-width: 180px; }
+  /* Caption always visible on mobile (no hover) */
+  .marquee-overlay { opacity: 1; background: linear-gradient(to top, rgba(18,5,14,0.72) 0%, transparent 60%); }
+  .marquee-photo:hover img { transform: none; }
+  /* Lightbox nav hidden — swipe to navigate mentally */
+  .lb-nav { display: none; }
+  .lb-img-wrap { max-width: 96vw; }
+  .lb-img-wrap img { max-height: 68vh; border-radius: 10px; }
+  .tab-btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
 }

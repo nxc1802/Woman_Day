@@ -230,13 +230,28 @@
 @media (max-width: 768px) {
   .gift-content { gap: 2rem; padding-top: 4rem; }
   .center-frame { width: 210px; height: 210px; }
-  .frame-photo { width: 162px; height: 162px; }
-  .orbit-heart { transform-origin: 105px 105px; }
+  .frame-photo  { width: 162px; height: 162px; }
+  .orbit-heart  { transform-origin: 105px 105px; }
   @keyframes orbitHeart {
     from { transform: rotate(0deg) translateX(105px) rotate(0deg); }
-    to { transform: rotate(360deg) translateX(105px) rotate(-360deg); }
+    to   { transform: rotate(360deg) translateX(105px) rotate(-360deg); }
   }
-  .gift-card { padding: 2rem 1.8rem; }
+  .gift-card  { padding: 2rem 1.8rem; }
   .gift-title { font-size: 2.2rem; }
   .falling-photo { width: 58px; height: 58px; }
+}
+@media (max-width: 480px) {
+  .gift-content { gap: 1.5rem; padding-top: 3.5rem; }
+  .center-frame { width: 180px; height: 180px; }
+  .frame-photo  { width: 138px; height: 138px; }
+  .orbit-heart  { transform-origin: 90px 90px; }
+  @keyframes orbitHeart {
+    from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
+    to   { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
+  }
+  .gift-card    { padding: 1.5rem 1.2rem; max-width: 340px; }
+  .gift-title   { font-size: 1.9rem; }
+  .gift-message { font-size: 0.98rem; }
+  .falling-photo { width: 50px; height: 50px; }
+  .frame-hint   { font-size: 0.65rem; }
 }

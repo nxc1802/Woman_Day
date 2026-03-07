@@ -83,6 +83,21 @@
 
 @media (max-width: 768px) {
   .music-page { padding-top: 4rem; gap: 1.5rem; }
-  .now-playing { flex-direction: column; padding: 1.5rem; gap: 1.5rem; text-align: center; }
+  .now-playing { flex-direction: column; padding: 1.5rem; gap: 1.2rem; text-align: center; }
   .np-controls { justify-content: center; }
+  .np-title { font-size: 1.3rem; }
+}
+@media (max-width: 480px) {
+  .music-page { padding: 3.5rem 1rem 2rem; gap: 1rem; }
+  .now-playing { padding: 1.2rem; gap: 1rem; }
+  .np-vinyl { width: 120px; height: 120px; }
+  .vinyl-outer { width: 108px; height: 108px; }
+  .vinyl-inner { width: 82px; height: 82px; }
+  .vinyl-ring { width: 108px; height: 108px; }
+  .np-title { font-size: 1.15rem; }
+  .ctrl-btn { width: 38px; height: 38px; }
+  .ctrl-play { width: 48px; height: 48px; }
+  .song-item { padding: 0.8rem 1rem; gap: 0.8rem; }
+  .song-thumb { width: 44px; height: 44px; border-radius: 10px; }
+  .song-name { font-size: 0.95rem; }
 }
