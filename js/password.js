@@ -2,7 +2,7 @@
    PASSWORD PAGE — Logic
    ============================================ */
 
-const CORRECT_PASSWORD = 'iloveyou';
+const CORRECT_PASSWORD = '05102025';
 
 const passwordInput = document.getElementById('passwordInput');
 const unlockBtn = document.getElementById('unlockBtn');

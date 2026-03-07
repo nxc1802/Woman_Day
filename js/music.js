@@ -2,39 +2,39 @@
    MUSIC PAGE — Logic (Howler.js)
    ============================================ */
 
-/* ---- Song data — replace src with actual files ---- */
+/* ---- Song data ---- */
 const SONGS = [
   {
     id: 0,
-    title: 'Perfect',
-    artist: 'Ed Sheeran',
-    src: '../assets/music/song1.mp3',
-    cover: '../assets/images/gf1.jpg',
-    duration: '4:23',
+    title: 'Chiếc Khăn Gió Ấm',
+    artist: 'Khánh Phương x meChill',
+    src: '../assets/music/Chiếc Khăn Gió Ấm (Lofi Lyrics) - Khánh Phương x meChill _ gửi cho em đêm lung linh Hot  Tiktok - meChill.mp3',
+    cover: '../assets/images/thumnails_music/IMG_0834.JPG',
+    duration: '—',
   },
   {
     id: 1,
-    title: 'A Thousand Years',
-    artist: 'Christina Perri',
-    src: '../assets/music/song2.mp3',
-    cover: '../assets/images/gf2.jpg',
-    duration: '4:45',
+    title: 'Hôn Lễ Của Em',
+    artist: 'Hiền Hồ',
+    src: '../assets/music/HÔN LỄ CỦA EM - HIỀN HỒ  Solo Version  Sáng tác Trọng Nhân - Hiền Hồ Official.mp3',
+    cover: '../assets/images/thumnails_music/IMG_0835.JPG',
+    duration: '—',
   },
   {
     id: 2,
-    title: 'Can\'t Help Falling in Love',
-    artist: 'Elvis Presley',
-    src: '../assets/music/song3.mp3',
-    cover: '../assets/images/gf3.jpg',
-    duration: '3:00',
+    title: 'Thằng Điên',
+    artist: 'JustaTee x Phương Ly',
+    src: '../assets/music/THẰNG ĐIÊN  JUSTATEE x PHƯƠNG LY  OFFICIAL MV - JustaTeeMusic.mp3',
+    cover: '../assets/images/thumnails_music/IMG_0836.JPG',
+    duration: '—',
   },
   {
     id: 3,
-    title: 'All of Me',
-    artist: 'John Legend',
-    src: '../assets/music/song4.mp3',
-    cover: '../assets/images/gf4.jpg',
-    duration: '4:29',
+    title: 'Ai Đưa Em Về',
+    artist: 'TIA ft. Lê Thiện Hiếu',
+    src: '../assets/music/TIA - Ai Đưa Em Về  Official M_V  Ft. Lê Thiện Hiếu (Low Cortisol Song) - TIA.mp3',
+    cover: '../assets/images/thumnails_music/IMG_0837.JPG',
+    duration: '—',
   },
 ];
 

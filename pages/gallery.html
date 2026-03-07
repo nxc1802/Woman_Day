@@ -25,10 +25,17 @@
       <p class="page-subtitle">Every photo, a story worth keeping</p>
     </header>
 
+    <!-- Tab filter -->
+    <div class="gallery-tabs" id="galleryTabs">
+      <button class="tab-btn active" data-filter="all" onclick="filterGallery('all', this)">All ❤️</button>
+      <button class="tab-btn" data-filter="solo" onclick="filterGallery('solo', this)">Hong 🌸</button>
+      <button class="tab-btn" data-filter="couple" onclick="filterGallery('couple', this)">Us 💕</button>
+    </div>
+
     <!-- Stats bar -->
     <div class="gallery-stats glass-card" id="galleryStats">
       <div class="stat-item">
-        <span class="stat-num" id="statCount">8</span>
+        <span class="stat-num" id="statCount">—</span>
         <span class="stat-label">Moments</span>
       </div>
       <div class="stat-divider"></div>
@@ -43,86 +50,11 @@
       </div>
     </div>
 
-    <!-- Gallery grid -->
-    <div class="gallery-grid" id="galleryGrid">
-
-      <!-- Large feature card -->
-      <div class="gallery-item gallery-item--large" data-aos="fade-up" data-aos-duration="1200" onclick="openLightbox(0)">
-        <img src="../assets/images/gf1.jpg" alt="Memory 1"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">❤️</div>
-          <p class="overlay-caption">The day everything changed</p>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="100" onclick="openLightbox(1)">
-        <img src="../assets/images/gf2.jpg" alt="Memory 2"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">🌸</div>
-          <p class="overlay-caption">Your beautiful smile</p>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200" onclick="openLightbox(2)">
-        <img src="../assets/images/gf3.jpg" alt="Memory 3"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">💕</div>
-          <p class="overlay-caption">Our favorite place</p>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-aos="zoom-in" data-aos-duration="1100" data-aos-delay="50" onclick="openLightbox(3)">
-        <img src="../assets/images/gf4.jpg" alt="Memory 4"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">✨</div>
-          <p class="overlay-caption">Always glowing</p>
-        </div>
-      </div>
-
-      <div class="gallery-item gallery-item--tall" data-aos="fade-right" data-aos-duration="1200" data-aos-delay="100" onclick="openLightbox(4)">
-        <img src="../assets/images/gf5.jpg" alt="Memory 5"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">💗</div>
-          <p class="overlay-caption">A moment in time</p>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="150" onclick="openLightbox(5)">
-        <img src="../assets/images/gf6.jpg" alt="Memory 6"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">🌺</div>
-          <p class="overlay-caption">Pure happiness</p>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-aos="zoom-in" data-aos-duration="1100" data-aos-delay="200" onclick="openLightbox(6)">
-        <img src="../assets/images/gf7.jpg" alt="Memory 7"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">💖</div>
-          <p class="overlay-caption">My world</p>
-        </div>
-      </div>
-
-      <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="250" onclick="openLightbox(7)">
-        <img src="../assets/images/gf8.jpg" alt="Memory 8"
-          onerror="this.parentElement.classList.add('img-placeholder')" />
-        <div class="gallery-overlay">
-          <div class="overlay-heart">🥰</div>
-          <p class="overlay-caption">Forever and always</p>
-        </div>
-      </div>
-
-    </div>
+    <!-- Gallery grid (rendered by JS) -->
+    <div class="gallery-grid" id="galleryGrid"></div>
 
     <!-- Footer quote -->
-    <div class="gallery-quote" data-aos="fade-up" data-aos-duration="1000">
+    <div class="gallery-quote" id="galleryQuote">
       <p>"Every moment with you is my favorite moment." 💕</p>
     </div>
 

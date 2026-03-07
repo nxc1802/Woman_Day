@@ -7,9 +7,43 @@
   justify-content: flex-start;
   padding-top: 5rem;
   padding-bottom: 4rem;
-  gap: 2.5rem;
+  gap: 2rem;
   align-items: center;
   min-height: 100vh;
+}
+
+/* ---- Tab filter ---- */
+.gallery-tabs {
+  display: flex;
+  gap: 0.6rem;
+  position: relative;
+  z-index: 2;
+}
+
+.tab-btn {
+  background: rgba(255, 107, 129, 0.08);
+  border: 1px solid rgba(255, 107, 129, 0.2);
+  color: var(--text-muted);
+  padding: 0.5rem 1.4rem;
+  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.04em;
+}
+
+.tab-btn:hover {
+  border-color: rgba(255, 77, 109, 0.4);
+  color: var(--soft-white);
+  background: rgba(255, 77, 109, 0.15);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--rose), var(--pink));
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 77, 109, 0.35);
 }
 
 /* ---- Header ---- */
