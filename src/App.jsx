@@ -5,6 +5,7 @@ import MusicPage from './pages/MusicPage';
 import LetterPage from './pages/LetterPage';
 import GalleryPage from './pages/GalleryPage';
 import GiftPage from './pages/GiftPage';
+import PhotoboothPage from './pages/PhotoboothPage';
 
 function ProtectedRoute({ children }) {
   const isUnlocked = sessionStorage.getItem('love_unlocked') === 'true';
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/letter" element={<ProtectedRoute><LetterPage /></ProtectedRoute>} />
       <Route path="/gallery" element={<ProtectedRoute><GalleryPage /></ProtectedRoute>} />
       <Route path="/gift" element={<ProtectedRoute><GiftPage /></ProtectedRoute>} />
+      <Route path="/photobooth" element={<ProtectedRoute><PhotoboothPage /></ProtectedRoute>} />
     </Routes>
   );
 }

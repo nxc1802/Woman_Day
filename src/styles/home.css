@@ -31,15 +31,23 @@
 .home-date { font-size: 0.76rem; color: rgba(236,72,153,0.55); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 0.8rem; }
 .home-title { margin-bottom: 0.5rem; }
 
-/* Grid */
+/* Grid — 3 col desktop for 5 cards (3+2) */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.4rem;
-  width: 100%; max-width: 760px;
+  width: 100%; max-width: 900px;
   position: relative; z-index: 2;
   margin-bottom: 2.8rem;
 }
+/* Last row: 2 cards centered */
+.menu-card:nth-child(4),
+.menu-card:nth-child(5) {
+  /* intentionally empty — handled by implicit grid */
+}
+/* If 5 items in 3-col grid → row 2 has 2 items, auto-centered via justify-items */
+.menu-grid { justify-items: center; }
+.menu-card { width: 100%; }
 
 /* Card */
 .menu-card {
@@ -80,6 +88,13 @@
 .card-arrow { position: absolute; bottom: 1rem; right: 1.2rem; font-size: 1rem; color: rgba(249,168,201,0.38); transition: transform 0.3s, color 0.3s; }
 .menu-card:hover .card-arrow { transform: translateX(4px); color: var(--rose); }
 
+/* Per-card accent colors */
+.card-photobooth {
+  background: linear-gradient(145deg, rgba(124,58,237,0.1), rgba(192,132,252,0.05));
+  border-color: rgba(124,58,237,0.18);
+}
+.card-photobooth:hover { border-color: rgba(124,58,237,0.45); box-shadow: 0 20px 60px rgba(124,58,237,0.25); }
+
 /* Special (gift) */
 .card-special { background: linear-gradient(145deg, rgba(236,72,153,0.16), rgba(249,168,201,0.06)); border-color: rgba(236,72,153,0.28); }
 .card-special:hover { border-color: var(--rose); box-shadow: 0 20px 60px rgba(236,72,153,0.38); }
@@ -88,8 +103,14 @@
 /* Footer */
 .home-footer { text-align: center; color: rgba(192,132,168,0.45); font-size: 0.83rem; letter-spacing: 0.08em; position: relative; z-index: 2; }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .menu-grid { grid-template-columns: repeat(2, 1fr); max-width: 620px; }
+  /* 5th card on its own row: span full width */
+  .menu-card:last-child:nth-child(5) { grid-column: span 2; max-width: 280px; }
+}
+@media (max-width: 600px) {
   .menu-grid { grid-template-columns: 1fr; max-width: 400px; gap: 1rem; }
+  .menu-card:last-child:nth-child(5) { grid-column: span 1; max-width: 100%; }
   .menu-card { flex-direction: row; align-items: center; justify-content: flex-start; padding: 1.8rem 1.4rem; gap: 1.2rem; }
   .menu-card:hover { transform: translateX(5px) scale(1.01); }
   .card-icon { font-size: 2.4rem; margin-bottom: 0; flex-shrink: 0; }

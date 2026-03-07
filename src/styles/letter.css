@@ -28,7 +28,24 @@
 }
 
 /* Header */
-.board-header { text-align: center; position: relative; z-index: 2; }
+.board-header { text-align: center; position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+
+/* Author filter tabs */
+.author-filter { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+.filter-tab {
+  padding: 0.4rem 1.1rem;
+  border-radius: 50px;
+  border: 1.5px solid rgba(236,72,153,0.22);
+  background: rgba(253,242,248,0.5);
+  color: rgba(157,23,77,0.7);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  letter-spacing: 0.04em;
+}
+.filter-tab:hover   { background: rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.4); }
+.filter-tab.active  { background: linear-gradient(135deg, #f9a8d4, #ec4899); border-color: transparent; color: white; }
 
 /* ============================================
    LETTERS BOARD
@@ -92,9 +109,32 @@
 /* Card inner */
 .card-inner { position: relative; z-index: 2; }
 
-.card-tag-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
+.card-tag-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; flex-wrap: wrap; }
 .card-icon-badge { font-size: 1.2rem; }
-.card-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.card-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Author badge on card */
+.author-badge-sm {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 50px;
+  flex-shrink: 0;
+}
+.badge-anh { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+.badge-em  { background: rgba(236,72,153,0.12); color: #9d174d; }
+
+/* Pill quote preview on card */
+.card-pill-preview {
+  font-size: 0.73rem;
+  color: rgba(26,10,24,0.5);
+  font-style: italic;
+  line-height: 1.45;
+  margin-bottom: 0.45rem;
+  border-left: 2px solid rgba(236,72,153,0.3);
+  padding-left: 0.5rem;
+}
 .card-heading {
   font-family: var(--font-script);
   font-size: 1.35rem;
@@ -200,6 +240,35 @@
   border: 1px solid rgba(249,168,201,0.3);
 }
 
+/* Author badge in modal */
+.modal-meta-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
+.author-badge {
+  font-size: 0.7rem; font-weight: 700;
+  padding: 0.18rem 0.65rem; border-radius: 50px;
+}
+.badge-anh { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+.badge-em  { background: rgba(236,72,153,0.12); color: #9d174d; }
+
+/* Pill quote block in modal */
+.pill-quote {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  background: rgba(253,242,248,0.7);
+  border-left: 3px solid #ec4899;
+  border-radius: 0 12px 12px 0;
+  padding: 0.9rem 1.1rem;
+  margin: 0;
+}
+.pill-icon { font-size: 1.1rem; flex-shrink: 0; line-height: 1.6; }
+.pill-quote p {
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #9d174d;
+  line-height: 1.65;
+  margin: 0;
+}
+
 .modal-close {
   position: absolute;
   top: 1.2rem; right: 1.2rem;
@@ -297,6 +366,24 @@
 .form-textarea:focus { border-color: rgba(236,72,153,0.55); background: #fff8fc; }
 .form-input::placeholder,
 .form-textarea::placeholder { color: rgba(157,23,77,0.4); }
+
+/* Author selector */
+.author-selector { display: flex; gap: 0.7rem; }
+.author-btn {
+  flex: 1;
+  padding: 0.65rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(236,72,153,0.2);
+  background: rgba(253,242,248,0.6);
+  color: rgba(26,10,24,0.6);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.author-btn:hover     { border-color: rgba(236,72,153,0.4); }
+.author-btn.selected-anh { background: rgba(59,130,246,0.12); border-color: #3b82f6; color: #1d4ed8; }
+.author-btn.selected-em  { background: rgba(236,72,153,0.12); border-color: #ec4899; color: #9d174d; }
 
 /* Icon picker */
 .icon-picker {

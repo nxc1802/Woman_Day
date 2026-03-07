@@ -4,10 +4,11 @@ import gsap from 'gsap';
 import '../styles/home.css';
 
 const CARDS = [
-  { to: '/music', icon: '🎵', title: 'Our Songs', desc: 'Songs that remind me of us', color: 'card-music' },
-  { to: '/letter', icon: '💌', title: 'Love Letters', desc: 'Words straight from my heart', color: 'card-letter' },
-  { to: '/gallery', icon: '📸', title: 'Our Memories', desc: 'Moments I\'ll never forget', color: 'card-gallery' },
-  { to: '/gift', icon: '🎁', title: 'My Gift to You', desc: 'Something magical awaits...', color: 'card-gift', special: true },
+  { to: '/music',      icon: '🎵', title: 'Our Songs',     desc: 'Songs that remind me of us',       color: 'card-music' },
+  { to: '/letter',     icon: '💊', title: 'Lọ Thuốc',      desc: 'Những viên thuốc tình yêu của mình', color: 'card-letter' },
+  { to: '/gallery',    icon: '🖼️', title: 'Our Memories',  desc: 'Moments I\'ll never forget',       color: 'card-gallery' },
+  { to: '/photobooth', icon: '📷', title: 'Photobooth',    desc: 'Ảnh booth chụp cùng nhau 🎞️',     color: 'card-photobooth' },
+  { to: '/gift',       icon: '🎁', title: 'My Gift',       desc: 'Something magical awaits...',      color: 'card-gift', special: true },
 ];
 
 function PetalsBg() {
