@@ -1,9 +1,21 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/password.css';
+import { PASSWORDS } from '../config/passwords';
 
-const CORRECT_PASSWORD = '05102025';
+/* Pick a random password entry once per session and cache it.
+   A new entry is chosen every time the user opens a fresh tab/session. */
+function getSessionEntry() {
+  const cached = sessionStorage.getItem('love_pw_idx');
+  if (cached !== null) {
+    const idx = parseInt(cached, 10);
+    return PASSWORDS[idx] ?? PASSWORDS[0];
+  }
+  const idx = Math.floor(Math.random() * PASSWORDS.length);
+  sessionStorage.setItem('love_pw_idx', String(idx));
+  return PASSWORDS[idx];
+}
 
 const BG_EMOJIS = ['❤️', '🌸', '💕', '💗', '🌺', '💖', '✨', '🌷'];
 
@@ -29,11 +41,12 @@ function HeartsBg() {
 }
 
 export default function PasswordPage() {
-  const navigate = useNavigate();
+  const navigate   = useNavigate();
+  const entry      = getSessionEntry();   // { password, hint } for this session
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
-  const cardRef = useRef(null);
-  const iconRef = useRef(null);
+  const [error, setError]       = useState(false);
+  const cardRef      = useRef(null);
+  const iconRef      = useRef(null);
   const explosionRef = useRef(null);
 
   useEffect(() => {
@@ -46,7 +59,7 @@ export default function PasswordPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (password.trim().toLowerCase() === CORRECT_PASSWORD) {
+    if (password.trim().toLowerCase() === entry.password.toLowerCase()) {
       handleSuccess();
     } else {
       handleError();
@@ -141,7 +154,7 @@ export default function PasswordPage() {
           <button type="submit" className="btn-pink">Unlock ✨</button>
         </form>
 
-        <p className="pw-hint">Gợi ý: Ngày mình quen nhau 🥺</p>
+        <p className="pw-hint">Gợi ý: {entry.hint}</p>
       </div>
     </div>
   );
