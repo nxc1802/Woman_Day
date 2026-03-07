@@ -290,7 +290,10 @@ const STORAGE_KEY = 'love_custom_letters';
 function loadCustomLetters() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    // Ensure all loaded custom letters have the isCustom flag (backward compat)
+    return parsed.map(l => ({ ...l, isCustom: true }));
   } catch {
     return [];
   }
@@ -310,16 +313,37 @@ export default function LetterPage() {
   const [openLetter, setOpenLetter]       = useState(null);
   const [showAddForm, setShowAddForm]     = useState(false);
   const [filterAuthor, setFilterAuthor]   = useState('all');
+  const [confirmId, setConfirmId]         = useState(null); // id awaiting delete confirm
+  const confirmTimer = useRef(null);
 
   const letters  = [...DEFAULT_LETTERS, ...customLetters];
   const filtered = filterAuthor === 'all' ? letters : letters.filter(l => l.author === filterAuthor);
 
   function handleAdd(newLetter) {
     setCustomLetters(prev => {
-      const updated = [...prev, newLetter];
+      const updated = [...prev, { ...newLetter, isCustom: true }];
       saveCustomLetters(updated);
       return updated;
     });
+  }
+
+  function handleDeleteClick(e, id) {
+    e.stopPropagation();
+    if (confirmId === id) {
+      // Second click — actually delete
+      clearTimeout(confirmTimer.current);
+      setConfirmId(null);
+      setCustomLetters(prev => {
+        const updated = prev.filter(l => l.id !== id);
+        saveCustomLetters(updated);
+        return updated;
+      });
+    } else {
+      // First click — ask confirm, auto-reset after 3s
+      setConfirmId(id);
+      clearTimeout(confirmTimer.current);
+      confirmTimer.current = setTimeout(() => setConfirmId(null), 3000);
+    }
   }
 
   return (
@@ -352,6 +376,18 @@ export default function LetterPage() {
             onClick={() => setOpenLetter(letter)}
           >
             <div className="card-pin" />
+
+            {/* Delete button — only for user-added letters */}
+            {letter.isCustom && (
+              <button
+                className={`card-delete-btn ${confirmId === letter.id ? 'confirm' : ''}`}
+                onClick={e => handleDeleteClick(e, letter.id)}
+                title={confirmId === letter.id ? 'Nhấn lần nữa để xoá' : 'Xoá thư này'}
+              >
+                {confirmId === letter.id ? '⚠️' : '🗑️'}
+              </button>
+            )}
+
             <div className="card-inner">
               <div className="card-tag-row">
                 <span className="card-icon-badge">{letter.icon}</span>
@@ -368,6 +404,11 @@ export default function LetterPage() {
               <span className="card-read-more" style={{ color: letter.textColor }}>Đọc thêm →</span>
             </div>
             <div className="card-shine" />
+
+            {/* Confirm tooltip */}
+            {confirmId === letter.id && (
+              <div className="card-confirm-tip">Nhấn ⚠️ lần nữa để xoá</div>
+            )}
           </div>
         ))}
 

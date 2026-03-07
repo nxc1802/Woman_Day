@@ -106,6 +106,63 @@
   border-radius: 2px;
 }
 
+/* Delete button — custom letters only */
+.card-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(4px);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+}
+.letter-card:hover .card-delete-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+.card-delete-btn:hover { background: rgba(254,202,202,0.9); }
+.card-delete-btn.confirm {
+  opacity: 1;
+  transform: scale(1.15);
+  background: rgba(254,226,226,0.95);
+  animation: deletePulse 0.4s ease;
+}
+@keyframes deletePulse {
+  0% { transform: scale(1.15); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1.15); }
+}
+
+/* Confirm tooltip */
+.card-confirm-tip {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(239,68,68,0.9);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  z-index: 5;
+  pointer-events: none;
+  animation: tipFadeIn 0.2s ease;
+  white-space: nowrap;
+}
+@keyframes tipFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Card inner */
 .card-inner { position: relative; z-index: 2; }
 
