@@ -32,7 +32,8 @@ export default function MusicPage() {
   useEffect(() => {
     gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.8 });
     gsap.from(playerRef.current, { opacity: 0, y: 40, duration: 0.8, delay: 0.3, ease: 'back.out(1.4)' });
-    gsap.from('.song-item', { opacity: 0, x: -30, stagger: 0.1, duration: 0.6, delay: 0.5 });
+    // NOTE: Do NOT use gsap.from on .song-item — GSAP sets inline opacity:0
+    // which persists across React re-renders. Use CSS animation instead.
     return () => { howlRef.current?.unload(); clearInterval(progressInterval.current); };
   }, []);
 

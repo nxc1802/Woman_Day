@@ -50,7 +50,22 @@
 
 /* Playlist */
 .playlist { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 2; }
-.song-item { display: flex; align-items: center; gap: 1.1rem; padding: 0.95rem 1.3rem; background: var(--gradient-card); backdrop-filter: blur(12px); border: 1px solid rgba(249,168,201,0.1); border-radius: 16px; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
+.song-item {
+  display: flex; align-items: center; gap: 1.1rem; padding: 0.95rem 1.3rem;
+  background: var(--gradient-card); backdrop-filter: blur(12px);
+  border: 1px solid rgba(249,168,201,0.1); border-radius: 16px;
+  cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;
+  /* CSS entrance animation — safe across React re-renders */
+  animation: slideInLeft 0.5s ease both;
+}
+.song-item:nth-child(1) { animation-delay: 0.05s; }
+.song-item:nth-child(2) { animation-delay: 0.12s; }
+.song-item:nth-child(3) { animation-delay: 0.19s; }
+.song-item:nth-child(4) { animation-delay: 0.26s; }
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 .song-item::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 3px; background: linear-gradient(to bottom, var(--rose-deep), var(--pink)); transform: scaleY(0); transition: transform 0.3s; }
 .song-item:hover { border-color: rgba(236,72,153,0.28); transform: translateX(4px); background: linear-gradient(145deg,rgba(249,168,201,0.13),rgba(236,72,153,0.05)); }
 .song-item:hover::before, .song-item.active::before { transform: scaleY(1); }
