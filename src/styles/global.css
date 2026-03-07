@@ -1,0 +1,204 @@
+/* ============================================
+   LOVE GIFT WEBSITE v2 — Global Styles (React)
+   ============================================ */
+
+/* ---- CSS Variables — lighter, softer pink theme ---- */
+:root {
+  --pink: #f9a8c9;
+  --rose: #ec4899;
+  --rose-deep: #db2777;
+  --soft-pink: #fce7f3;
+  --soft-white: #fdf4ff;
+  --light-pink: #fbcfe8;
+  --dark: #180a16;
+  --dark-mid: #2d1030;
+  --dark-card: #3a1040;
+  --text-primary: #fdf4ff;
+  --text-muted: #c084a8;
+  --text-soft: #e9b8d4;
+  --shadow-pink: 0 8px 32px rgba(236, 72, 153, 0.18);
+  --shadow-deep: 0 20px 60px rgba(236, 72, 153, 0.32);
+  --gradient-bg: linear-gradient(135deg, #180a16 0%, #2d1030 50%, #180a16 100%);
+  --gradient-card: linear-gradient(145deg, rgba(249, 168, 201, 0.09), rgba(236, 72, 153, 0.04));
+  --font-script: 'Dancing Script', cursive;
+  --font-romantic: 'Great Vibes', cursive;
+  --font-body: 'Lato', sans-serif;
+  --radius: 20px;
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--gradient-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--rose); border-radius: 3px; }
+::selection { background: rgba(236, 72, 153, 0.25); }
+
+/* ---- Ambient Orbs ---- */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+}
+.orb-1 {
+  width: 450px; height: 450px;
+  background: var(--rose);
+  top: -120px; right: -120px;
+  animation: orbFloat 14s ease-in-out infinite;
+}
+.orb-2 {
+  width: 350px; height: 350px;
+  background: var(--pink);
+  bottom: -100px; left: -100px;
+  animation: orbFloat 18s ease-in-out infinite reverse;
+}
+
+/* ---- Glass Card ---- */
+.glass-card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(249, 168, 201, 0.18);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pink);
+}
+
+/* ---- Pink Button ---- */
+.btn-pink {
+  background: linear-gradient(135deg, var(--rose-deep), var(--rose), var(--pink));
+  color: white;
+  border: none;
+  padding: 0.9rem 2.5rem;
+  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 18px rgba(236, 72, 153, 0.38);
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+}
+.btn-pink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.btn-pink:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(236, 72, 153, 0.55); }
+.btn-pink:hover::after { opacity: 1; }
+.btn-pink:active { transform: translateY(0); }
+
+/* ---- Back Button ---- */
+.back-btn {
+  position: fixed;
+  top: 1.5rem; left: 1.5rem;
+  z-index: 100;
+  background: rgba(236, 72, 153, 0.12);
+  border: 1px solid rgba(249, 168, 201, 0.25);
+  color: var(--soft-white);
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex; align-items: center; gap: 0.4rem;
+  backdrop-filter: blur(10px);
+  transition: var(--transition);
+}
+.back-btn:hover {
+  background: rgba(236, 72, 153, 0.28);
+  border-color: var(--rose);
+  transform: translateX(-4px);
+}
+
+/* ---- Page Wrapper ---- */
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative; z-index: 1;
+}
+
+/* ---- Typography helpers ---- */
+.page-title {
+  font-family: var(--font-romantic);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  color: var(--soft-white);
+  text-align: center;
+  text-shadow: 0 0 30px rgba(249, 168, 201, 0.5);
+  line-height: 1.2;
+}
+.page-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes heartbeat { 0%,100%{transform:scale(1)} 14%{transform:scale(1.15)} 28%{transform:scale(1)} 42%{transform:scale(1.1)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+@keyframes orbFloat { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-20px) scale(1.04)} 66%{transform:translate(-20px,15px) scale(0.96)} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes ripple { 0%{transform:scale(0.8);opacity:0.8} 100%{transform:scale(2.6);opacity:0} }
+@keyframes pulseGlow {
+  0%,100%{ box-shadow: 0 0 20px rgba(236,72,153,0.3), 0 0 40px rgba(249,168,201,0.15); }
+  50%{ box-shadow: 0 0 40px rgba(236,72,153,0.7), 0 0 80px rgba(249,168,201,0.3); }
+}
+@keyframes musicGlow {
+  0%,100%{ box-shadow: 0 0 0 0 rgba(236,72,153,0); }
+  50%{ box-shadow: 0 0 0 12px rgba(236,72,153,0.12), 0 0 30px rgba(249,168,201,0.35); }
+}
+@keyframes kenBurns1 {
+  0%{ transform: scale(1) translate(0, 0); }
+  100%{ transform: scale(1.12) translate(-2%, -2%); }
+}
+@keyframes kenBurns2 {
+  0%{ transform: scale(1.08) translate(-2%, 1%); }
+  100%{ transform: scale(1) translate(2%, -1%); }
+}
+@keyframes kenBurns3 {
+  0%{ transform: scale(1) translate(1%, -1%); }
+  100%{ transform: scale(1.1) translate(-1%, 2%); }
+}
+
+/* ---- Utility ---- */
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
+.animate-glow { animation: pulseGlow 2.5s ease-in-out infinite; }
+.hidden { display: none !important; }
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .page-wrapper { padding: 1.2rem; }
+  .back-btn { top: 1rem; left: 1rem; padding: 0.5rem 1rem; font-size: 0.8rem; }
+  .glass-card { border-radius: 16px; }
+}

@@ -1,0 +1,242 @@
+.gift-page {
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(ellipse at center, #1e0a1a 0%, #0d0308 100%);
+}
+
+/* Canvas */
+.snow-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ============================================
+   FALLING ITEMS
+   ============================================ */
+.falling-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Falling message */
+.falling-message {
+  position: absolute;
+  top: -60px;
+  font-family: var(--font-script);
+  font-size: 0.95rem;
+  color: var(--msg-color, rgba(249,168,201,0.88));
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(236,72,153,0.4);
+  animation: fallAnim linear forwards;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Falling photo */
+.falling-photo {
+  position: absolute;
+  top: -90px;
+  width: 72px;
+  height: 72px;
+  pointer-events: all;
+  cursor: pointer;
+  animation: fallAnim linear forwards;
+  z-index: 2;
+}
+.falling-photo:hover .falling-photo-ring {
+  opacity: 1;
+  transform: scale(1.15);
+}
+.falling-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2.5px solid rgba(249,168,201,0.55);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45), 0 0 12px rgba(236,72,153,0.25);
+  display: block;
+  transition: transform 0.2s;
+}
+.falling-photo:hover img {
+  transform: scale(1.1);
+  border-color: var(--rose);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 20px rgba(236,72,153,0.5);
+}
+.falling-photo-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(236,72,153,0.5);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  animation: ripple 1.5s ease-out infinite;
+}
+
+@keyframes fallAnim {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(var(--rot, -5deg)) scale(0.85);
+  }
+  6% { opacity: 1; }
+  85% { opacity: 0.75; }
+  100% {
+    opacity: 0;
+    transform: translateY(112vh) rotate(var(--rot2, 5deg)) scale(1);
+  }
+}
+
+/* ============================================
+   GIFT CONTENT
+   ============================================ */
+.gift-content {
+  position: relative;
+  z-index: 3;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 5rem 2rem 3rem;
+  pointer-events: none;
+}
+.gift-content > * { pointer-events: auto; }
+
+/* ============================================
+   CENTER PHOTO FRAME
+   ============================================ */
+.center-frame {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.3s;
+}
+.center-frame.flash { filter: brightness(1.4) saturate(1.3); }
+
+/* Rotating rings */
+.frame-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid;
+  animation: spin linear infinite;
+}
+.ring-outer {
+  width: 100%; height: 100%;
+  border-color: rgba(249,168,201,0.28);
+  animation-duration: 20s;
+  border-style: dashed;
+}
+.ring-middle {
+  width: 88%; height: 88%;
+  border-color: rgba(236,72,153,0.18);
+  animation-duration: 13s;
+  animation-direction: reverse;
+  border-style: dotted;
+}
+
+/* Circular photo */
+.frame-photo {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid rgba(236,72,153,0.5);
+  box-shadow:
+    0 0 0 8px rgba(236,72,153,0.07),
+    0 0 40px rgba(236,72,153,0.38),
+    0 0 80px rgba(249,168,201,0.18);
+  position: relative;
+  z-index: 2;
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+.frame-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: opacity 0.35s ease;
+  display: block;
+}
+
+/* Orbiting hearts */
+.frame-hearts {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 3;
+}
+.orbit-heart {
+  position: absolute;
+  font-size: 1.1rem;
+  top: 0; left: 0;
+  transform-origin: 130px 130px;
+  animation: orbitHeart calc(5s + var(--i, 0) * 1.5s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes orbitHeart {
+  from { transform: rotate(0deg) translateX(130px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(130px) rotate(-360deg); }
+}
+
+/* Hint text */
+.frame-hint {
+  position: absolute;
+  bottom: -2rem;
+  font-size: 0.72rem;
+  color: rgba(249,168,201,0.45);
+  letter-spacing: 0.1em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ============================================
+   GIFT CARD
+   ============================================ */
+.gift-card {
+  max-width: 460px;
+  width: 100%;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  border-color: rgba(236,72,153,0.22);
+  background: linear-gradient(145deg, rgba(236,72,153,0.1), rgba(249,168,201,0.04));
+}
+.gift-card-top { font-size: 2.4rem; animation: heartbeat 1.5s ease-in-out infinite; }
+.gift-title {
+  font-family: var(--font-romantic);
+  font-size: 2.8rem;
+  color: var(--soft-white);
+  text-shadow: 0 0 28px rgba(249,168,201,0.5);
+  line-height: 1.1;
+}
+.gift-date { font-size: 0.78rem; color: rgba(249,168,201,0.45); letter-spacing: 0.2em; text-transform: uppercase; }
+.gift-message { font-family: var(--font-script); font-size: 1.12rem; color: rgba(253,244,255,0.85); line-height: 1.9; }
+.gift-hearts { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.4rem; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .gift-content { gap: 2rem; padding-top: 4rem; }
+  .center-frame { width: 210px; height: 210px; }
+  .frame-photo { width: 162px; height: 162px; }
+  .orbit-heart { transform-origin: 105px 105px; }
+  @keyframes orbitHeart {
+    from { transform: rotate(0deg) translateX(105px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(105px) rotate(-360deg); }
+  }
+  .gift-card { padding: 2rem 1.8rem; }
+  .gift-title { font-size: 2.2rem; }
+  .falling-photo { width: 58px; height: 58px; }
+}
