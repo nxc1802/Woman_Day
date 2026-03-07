@@ -23,26 +23,27 @@ const STRIP_CONFIG = [
   { rot:  2.2, swayDur: 5.0, swayDelay: 1.9  },
 ];
 
-/* Ticker: duplicate 3× so the loop is seamless */
-const TICKER_IMGS = [...PHOTOS, ...PHOTOS, ...PHOTOS];
-
-/* ---- Film Ticker (scrolling strip at top) ---- */
-function FilmTicker() {
+/* ---- Petal/Snow background (same style as HomePage) ---- */
+const BG_ICONS = ['🌸', '💕', '✨', '🌺', '💗', '🎞️', '📷', '🌷'];
+function PetalsBg() {
+  const petals = Array.from({ length: 28 }, (_, i) => ({
+    id: i,
+    icon: BG_ICONS[i % BG_ICONS.length],
+    left: `${(i / 28) * 100}%`,
+    size: `${0.7 + Math.random() * 0.9}rem`,
+    dur:  `${13 + Math.random() * 12}s`,
+    delay: `${Math.random() * 12}s`,
+    drift: `${Math.random() * 80 - 40}px`,
+  }));
   return (
-    <div className="film-ticker-wrap" aria-hidden>
-      <div className="film-ticker">
-        {TICKER_IMGS.map((src, i) => (
-          <div key={i} className="ticker-frame">
-            <div className="ticker-holes-col">
-              {[0,1].map(h => <div key={h} className="ticker-hole" />)}
-            </div>
-            <img src={src} alt="" />
-            <div className="ticker-holes-col">
-              {[0,1].map(h => <div key={h} className="ticker-hole" />)}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="pb-petals-bg" aria-hidden>
+      {petals.map(p => (
+        <span key={p.id} className="pb-petal" style={{
+          left: p.left, fontSize: p.size,
+          animationDuration: p.dur, animationDelay: p.delay,
+          '--drift': p.drift,
+        }}>{p.icon}</span>
+      ))}
     </div>
   );
 }
@@ -122,10 +123,8 @@ export default function PhotoboothPage() {
     <div className="photobooth-page">
       <div className="orb orb-1" /><div className="orb orb-2" />
       <div className="pb-bg" />
+      <PetalsBg />
       <Link to="/home" className="back-btn">← Back</Link>
-
-      {/* Scrolling film ticker */}
-      <FilmTicker />
 
       <div className="pb-header" ref={headerRef}>
         <div className="pb-camera-icon">📷</div>

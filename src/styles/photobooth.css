@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 2rem 4rem;     /* no top padding — film ticker sits at very top */
+  padding: 5rem 2rem 4rem;
   gap: 2rem;
   position: relative;
   overflow-x: hidden;
@@ -21,69 +21,28 @@
 }
 
 /* ============================================
-   FILM TICKER  (scrolling strip at top)
+   FALLING PETALS BACKGROUND
    ============================================ */
-.film-ticker-wrap {
-  position: relative;
-  z-index: 3;
-  width: 100vw;
+.pb-petals-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
   overflow: hidden;
-  background: rgba(10,3,8,0.75);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(236,72,153,0.18);
-  /* Push page back-btn down so it clears the ticker */
-  margin-bottom: 0.5rem;
 }
-
-.film-ticker {
-  display: flex;
-  gap: 6px;
-  padding: 8px 6px;
-  width: max-content;
-  animation: tickerScroll 28s linear infinite;
+.pb-petal {
+  position: absolute;
+  top: -2.5rem;
+  opacity: 0;
+  animation: pbPetalFall var(--dur, 14s) linear infinite;
+  animation-delay: var(--delay, 0s);
 }
-.film-ticker:hover { animation-play-state: paused; }
-
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-33.333%); }  /* 1/3 of total (3 copies) */
+@keyframes pbPetalFall {
+  0%   { opacity: 0;    transform: translateY(0)     translateX(0)                    rotate(0deg); }
+  6%   { opacity: 0.4; }
+  90%  { opacity: 0.12; }
+  100% { opacity: 0;    transform: translateY(108vh) translateX(var(--drift, 30px))   rotate(400deg); }
 }
-
-.ticker-frame {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 3px;
-  padding: 2px;
-  flex-shrink: 0;
-}
-.ticker-holes-col {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 2px;
-}
-.ticker-hole {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.ticker-frame img {
-  height: 56px;
-  width: auto;
-  border-radius: 2px;
-  display: block;
-  opacity: 0.85;
-  filter: brightness(0.92);
-  transition: opacity 0.2s, filter 0.2s;
-}
-.ticker-frame:hover img { opacity: 1; filter: brightness(1); }
-
-/* ---- Back btn offset (sits below ticker) ---- */
-.photobooth-page .back-btn { position: relative; z-index: 4; align-self: flex-start; margin-top: 0.8rem; }
 
 /* ---- Header ---- */
 .pb-header {
@@ -106,15 +65,16 @@
 }
 
 /* ============================================
-   GALLERY — scattered photobooth prints
+   GALLERY — 4-column grid
    ============================================ */
 .pb-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3rem 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 3rem 2.2rem;
   width: 100%;
-  max-width: 1000px;
+  max-width: 1040px;
+  justify-content: center;
+  align-items: start;
   position: relative;
   z-index: 2;
   padding: 1rem 0 2rem;
@@ -288,15 +248,18 @@
 /* ============================================
    RESPONSIVE
    ============================================ */
-@media (max-width: 900px) {
-  .strip-img { height: 380px; }
-  .pb-lb-prev { left: -44px; }
-  .pb-lb-next { right: -44px; }
+@media (max-width: 1000px) {
+  .pb-gallery { grid-template-columns: repeat(3, auto); }
+  .strip-img  { height: 400px; }
 }
-@media (max-width: 600px) {
-  .pb-gallery { gap: 2.5rem 1rem; }
-  .strip-img  { height: 280px; }
-  .photobooth-page { padding: 0 1rem 3rem; }
+@media (max-width: 700px) {
+  .pb-gallery { grid-template-columns: repeat(2, auto); gap: 2rem 1.2rem; }
+  .strip-img  { height: 300px; }
+  .photobooth-page { padding: 4.5rem 1rem 3rem; }
+  .pb-lb-prev { left: -40px; }
+  .pb-lb-next { right: -40px; }
+}
+@media (max-width: 440px) {
+  .pb-gallery { grid-template-columns: 1fr; }
   .pb-lb-prev, .pb-lb-next { display: none; }
-  .pb-lb-counter { bottom: -1.6rem; }
 }
