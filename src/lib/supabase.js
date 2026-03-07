@@ -26,7 +26,7 @@ export async function fetchAllLetters() {
   const { data, error } = await supabase
     .from(TABLE)
     .select('*')
-    .order('created_at', { ascending: true });
+    .order('id', { ascending: true });
 
   if (error) throw error;
   return (data ?? []).map(mapRow);
