@@ -1,0 +1,531 @@
+/* ============================================================
+   WISHLIST PAGE — Dreamy night sky palette
+   ============================================================ */
+
+.wish-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem 2rem 4rem;
+  position: relative;
+  gap: 2rem;
+  background: radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.08) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 80%, rgba(167,139,250,0.06) 0%, transparent 55%),
+              var(--gradient-bg);
+}
+
+/* ── Starfield ── */
+.wish-stars-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.wish-star {
+  position: absolute;
+  color: rgba(167,139,250,0.55);
+  animation: starTwinkle var(--dur, 3s) ease-in-out infinite alternate;
+  animation-delay: var(--delay, 0s);
+  font-style: normal;
+}
+@keyframes starTwinkle {
+  0%   { opacity: 0.15; transform: scale(0.8); }
+  100% { opacity: 0.9;  transform: scale(1.2); }
+}
+
+.wish-shoot {
+  position: absolute;
+  left: -80px;
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(167,139,250,0.8), transparent);
+  border-radius: 2px;
+  animation: shootingStar var(--dur, 1s) ease-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+}
+@keyframes shootingStar {
+  0%   { opacity: 0; transform: translateX(0) translateY(0) rotate(-30deg); }
+  10%  { opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translateX(120vw) translateY(60px) rotate(-30deg); }
+}
+
+/* ── Header ── */
+.wish-header {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+}
+.wish-title { color: var(--soft-white) !important; }
+.wish-subtitle { color: rgba(192,170,250,0.7); }
+
+/* ── Tabs ── */
+.wish-tabs {
+  display: flex;
+  gap: 0.6rem;
+  background: rgba(30,27,75,0.3);
+  border-radius: 50px;
+  padding: 0.3rem;
+  border: 1px solid rgba(99,102,241,0.2);
+  backdrop-filter: blur(8px);
+}
+.wish-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.4rem;
+  border-radius: 50px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: rgba(192,170,250,0.7);
+  background: transparent;
+  transition: all 0.25s ease;
+}
+.wish-tab:hover { color: rgba(216,180,254,1); background: rgba(99,102,241,0.1); }
+.wish-tab.active-gift {
+  background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(249,168,201,0.2));
+  color: #fce7f3;
+  box-shadow: 0 2px 12px rgba(236,72,153,0.25);
+}
+.wish-tab.active-event {
+  background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(167,139,250,0.2));
+  color: #ede9fe;
+  box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+}
+.wish-tab-count {
+  background: rgba(255,255,255,0.15);
+  border-radius: 50px;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ── Author filter ── */
+.wish-author-filter { margin-top: -0.2rem; }
+
+/* ── Grid ── */
+.wish-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  width: 100%;
+  max-width: 900px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Wish Card ── */
+.wish-card {
+  position: relative;
+  background: rgba(30,27,75,0.4);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 18px;
+  padding: 1.4rem 1.2rem 1.2rem;
+  cursor: pointer;
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  overflow: hidden;
+  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1), box-shadow 0.32s ease, border-color 0.32s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  animation: wishCardIn 0.45s ease both;
+}
+@keyframes wishCardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.wish-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: rgba(99,102,241,0.45);
+  box-shadow: 0 12px 40px rgba(99,102,241,0.2);
+  z-index: 5;
+}
+
+.wish-card.wish-gift { border-color: rgba(236,72,153,0.2); }
+.wish-card.wish-gift:hover { border-color: rgba(236,72,153,0.5); box-shadow: 0 12px 40px rgba(236,72,153,0.2); }
+
+.wish-card.wish-done {
+  background: rgba(16,46,32,0.35);
+  border-color: rgba(34,197,94,0.25);
+}
+.wish-card.wish-done:hover { border-color: rgba(34,197,94,0.5); box-shadow: 0 12px 40px rgba(34,197,94,0.15); }
+
+.wish-card.delete-mode { animation: cardShake 0.35s ease; }
+@keyframes cardShake {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-5px); }
+  50%  { transform: translateX(5px); }
+  75%  { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+.wish-card-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(167,139,250,0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.wish-card:hover .wish-card-glow { opacity: 1; }
+
+/* Status toggle button */
+.wish-status-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(167,139,250,0.4);
+  background: rgba(30,27,75,0.6);
+  color: rgba(167,139,250,0.7);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  z-index: 3;
+  line-height: 1;
+}
+.wish-status-btn:hover { border-color: rgba(167,139,250,0.8); background: rgba(99,102,241,0.25); }
+.wish-status-btn.done {
+  border-color: rgba(34,197,94,0.6);
+  background: rgba(16,46,32,0.6);
+  color: rgb(74,222,128);
+}
+.wish-status-btn.done:hover { border-color: rgb(34,197,94); background: rgba(16,46,32,0.8); }
+
+.wish-card-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+  padding-top: 0.15rem;
+  transition: transform 0.3s;
+}
+.wish-card:hover .wish-card-icon { transform: scale(1.15) rotate(-5deg); }
+
+.wish-card-body { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 0; padding-right: 1.5rem; }
+.wish-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(237,233,254,0.95);
+  line-height: 1.3;
+  word-break: break-word;
+}
+.done-title { text-decoration: line-through; opacity: 0.6; }
+.wish-card-desc {
+  font-size: 0.75rem;
+  color: rgba(196,181,253,0.65);
+  line-height: 1.4;
+}
+.wish-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.2rem;
+}
+.wish-done-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgb(74,222,128);
+  background: rgba(16,46,32,0.5);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 50px;
+  padding: 0.1rem 0.5rem;
+}
+
+/* Author badges */
+.wish-author-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 50px;
+}
+.wish-author-badge.badge-anh {
+  background: rgba(59,130,246,0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59,130,246,0.25);
+}
+.wish-author-badge.badge-em {
+  background: rgba(236,72,153,0.2);
+  color: #f9a8d4;
+  border: 1px solid rgba(236,72,153,0.25);
+}
+
+/* ── Add Card ── */
+.wish-add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(30,27,75,0.25);
+  border: 2px dashed rgba(99,102,241,0.25);
+  border-radius: 18px;
+  padding: 1.6rem 1rem;
+  cursor: pointer;
+  transition: all 0.28s ease;
+  min-height: 110px;
+}
+.wish-add-card:hover {
+  border-color: rgba(99,102,241,0.5);
+  background: rgba(99,102,241,0.08);
+  transform: scale(1.02);
+}
+.wish-add-card .add-card-icon {
+  font-size: 1.8rem;
+  color: rgba(167,139,250,0.6);
+  font-weight: 300;
+}
+.wish-add-card .add-card-text {
+  font-size: 0.75rem;
+  color: rgba(167,139,250,0.55);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* ── Delete Overlay ── */
+.wish-delete-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: rgba(15,5,30,0.92);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  z-index: 10;
+  animation: overlayIn 0.2s ease;
+}
+
+/* ── Modal overlay ── */
+.wish-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+/* ── Detail Modal ── */
+.wish-modal {
+  background: linear-gradient(145deg, rgba(22,16,56,0.97), rgba(30,27,75,0.97));
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(167,139,250,0.08);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.wish-modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  color: rgba(196,181,253,0.8);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.wish-modal-close:hover { background: rgba(167,139,250,0.25); color: #ede9fe; }
+
+.wish-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid rgba(99,102,241,0.15);
+  margin-bottom: 1.2rem;
+}
+.header-gift  { border-bottom-color: rgba(236,72,153,0.2); }
+.header-event { border-bottom-color: rgba(99,102,241,0.2); }
+
+.wish-modal-icon { font-size: 2.2rem; line-height: 1; flex-shrink: 0; }
+.wish-modal-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(167,139,250,0.6);
+  margin-bottom: 0.3rem;
+}
+.wish-modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: rgba(237,233,254,0.95);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.wish-modal-body { margin-bottom: 1.2rem; }
+.wish-modal-line {
+  font-size: 0.9rem;
+  color: rgba(196,181,253,0.8);
+  line-height: 1.7;
+  margin-bottom: 0.4rem;
+}
+
+.wish-done-banner {
+  background: linear-gradient(135deg, rgba(16,46,32,0.7), rgba(20,55,35,0.6));
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 12px;
+  color: rgb(74,222,128);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.7rem;
+  margin-bottom: 1.2rem;
+  animation: donePulse 2s ease-in-out infinite;
+}
+@keyframes donePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.1); }
+  50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+.wish-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(99,102,241,0.1);
+}
+.wish-modal-love {
+  font-family: var(--font-romantic);
+  font-size: 1.3rem;
+  color: rgba(167,139,250,0.6);
+}
+.wish-edit-btn {
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  border: 1.5px solid rgba(99,102,241,0.3);
+  background: rgba(99,102,241,0.1);
+  color: rgba(196,181,253,0.9);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.wish-edit-btn:hover { background: rgba(99,102,241,0.25); border-color: rgba(99,102,241,0.5); transform: scale(1.04); }
+
+/* ── Add / Edit Form Modal ── */
+.wish-form-modal {
+  background: linear-gradient(145deg, rgba(22,16,56,0.97), rgba(30,27,75,0.97));
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 540px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.wish-form-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgba(237,233,254,0.95);
+  margin-bottom: 1.4rem;
+  text-align: center;
+}
+
+/* Type selector */
+.wish-type-selector {
+  display: flex;
+  gap: 0.6rem;
+}
+.wish-type-btn {
+  flex: 1;
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(99,102,241,0.2);
+  background: rgba(30,27,75,0.4);
+  color: rgba(196,181,253,0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.wish-type-btn.selected {
+  border-color: rgba(99,102,241,0.6);
+  background: rgba(99,102,241,0.2);
+  color: #ede9fe;
+  box-shadow: 0 0 12px rgba(99,102,241,0.2);
+}
+
+/* Reuse form-field, form-label, form-input, form-textarea, icon-picker, icon-btn, author-selector, author-btn from letter.css */
+/* Override colors for dark theme */
+.wish-form .form-label { color: rgba(196,181,253,0.8); }
+.wish-form .form-input,
+.wish-form .form-textarea {
+  background: rgba(30,27,75,0.5);
+  border-color: rgba(99,102,241,0.25);
+  color: rgba(237,233,254,0.9);
+}
+.wish-form .form-input:focus,
+.wish-form .form-textarea:focus {
+  border-color: rgba(99,102,241,0.6);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+.wish-form .form-input::placeholder,
+.wish-form .form-textarea::placeholder { color: rgba(167,139,250,0.35); }
+.wish-form .icon-btn {
+  background: rgba(30,27,75,0.5);
+  border-color: rgba(99,102,241,0.15);
+}
+.wish-form .icon-btn.selected {
+  background: rgba(99,102,241,0.25);
+  border-color: rgba(99,102,241,0.6);
+}
+.wish-form .author-btn {
+  background: rgba(30,27,75,0.5);
+  border-color: rgba(99,102,241,0.2);
+  color: rgba(196,181,253,0.8);
+}
+.wish-btn-save {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  box-shadow: 0 4px 16px rgba(79,70,229,0.35) !important;
+}
+.wish-btn-save:hover { background: linear-gradient(135deg, #4338ca, #6d28d9) !important; }
+
+/* ── Responsive ── */
+@media (max-width: 760px) {
+  .wish-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem;
+  }
+}
+@media (max-width: 500px) {
+  .wish-grid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  .wish-card { padding: 1.2rem 1rem; }
+  .wish-tabs { flex-direction: row; }
+  .wish-tab { padding: 0.45rem 0.9rem; font-size: 0.78rem; }
+  .wish-modal { padding: 1.5rem; }
+  .wish-form-modal { padding: 1.4rem; }
+}

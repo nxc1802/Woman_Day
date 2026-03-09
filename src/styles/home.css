@@ -40,12 +40,7 @@
   position: relative; z-index: 2;
   margin-bottom: 2.8rem;
 }
-/* 5th card (odd last child) centered spanning both columns */
-.menu-card:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
-  max-width: calc(50% - 0.7rem);
-  justify-self: center;
-}
+/* 6 cards fill the 2-col grid evenly — no centering needed */
 
 /* Card */
 .menu-card {
@@ -93,6 +88,13 @@
 }
 .card-photobooth:hover { border-color: rgba(124,58,237,0.45); box-shadow: 0 20px 60px rgba(124,58,237,0.25); }
 
+/* Wishlist */
+.card-wishlist {
+  background: linear-gradient(145deg, rgba(99,102,241,0.1), rgba(167,139,250,0.05));
+  border-color: rgba(99,102,241,0.18);
+}
+.card-wishlist:hover { border-color: rgba(99,102,241,0.45); box-shadow: 0 20px 60px rgba(99,102,241,0.25); }
+
 /* Special (gift) */
 .card-special { background: linear-gradient(145deg, rgba(236,72,153,0.16), rgba(249,168,201,0.06)); border-color: rgba(236,72,153,0.28); }
 .card-special:hover { border-color: var(--rose); box-shadow: 0 20px 60px rgba(236,72,153,0.38); }
@@ -112,7 +114,6 @@
 
 @media (max-width: 600px) {
   .menu-grid { grid-template-columns: 1fr; max-width: 400px; gap: 1rem; }
-  .menu-card:last-child:nth-child(odd) { grid-column: auto; max-width: 100%; justify-self: auto; }
   .menu-card { flex-direction: row; align-items: center; justify-content: flex-start; padding: 1.8rem 1.4rem; gap: 1.2rem; }
   .menu-card:hover { transform: translateX(5px) scale(1.01); }
   .card-icon { font-size: 2.4rem; margin-bottom: 0; flex-shrink: 0; }

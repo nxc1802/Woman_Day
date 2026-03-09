@@ -5,9 +5,9 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(url, key);
 
-const TABLE = 'custom_letters';
+/* ── Row mappers (exported so AppDataContext can use them for Realtime) ── */
 
-const mapRow = row => ({
+export const mapLetterRow = row => ({
   id:        row.id,
   author:    row.author,
   icon:      row.icon,
@@ -21,21 +21,30 @@ const mapRow = row => ({
   content:   row.content,
 });
 
-/** Fetch all letters from Supabase, sorted by original insert order */
+export const mapWishRow = row => ({
+  id:          row.id,
+  type:        row.type,
+  author:      row.author,
+  icon:        row.icon,
+  title:       row.title,
+  description: row.description,
+  status:      row.status,
+});
+
+/* ── Letters ── */
+
 export async function fetchAllLetters() {
   const { data, error } = await supabase
-    .from(TABLE)
+    .from('custom_letters')
     .select('*')
     .order('id', { ascending: true });
-
   if (error) throw error;
-  return (data ?? []).map(mapRow);
+  return (data ?? []).map(mapLetterRow);
 }
 
-/** Insert a new letter; returns the saved letter */
 export async function insertLetter(letter) {
   const { data, error } = await supabase
-    .from(TABLE)
+    .from('custom_letters')
     .insert({
       id:         letter.id,
       author:     letter.author,
@@ -51,15 +60,13 @@ export async function insertLetter(letter) {
     })
     .select()
     .single();
-
   if (error) throw error;
-  return mapRow(data);
+  return mapLetterRow(data);
 }
 
-/** Update editable fields of a letter */
 export async function updateLetter(id, fields) {
   const { error } = await supabase
-    .from(TABLE)
+    .from('custom_letters')
     .update({
       author:     fields.author,
       icon:       fields.icon,
@@ -74,8 +81,63 @@ export async function updateLetter(id, fields) {
   if (error) throw error;
 }
 
-/** Delete a letter by id */
 export async function deleteLetter(id) {
-  const { error } = await supabase.from(TABLE).delete().eq('id', id);
+  const { error } = await supabase.from('custom_letters').delete().eq('id', id);
+  if (error) throw error;
+}
+
+/* ── Wishlists ── */
+
+export async function fetchAllWishlists() {
+  const { data, error } = await supabase
+    .from('wishlists')
+    .select('*')
+    .order('id', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(mapWishRow);
+}
+
+export async function insertWishlistItem(item) {
+  const { data, error } = await supabase
+    .from('wishlists')
+    .insert({
+      id:          item.id,
+      type:        item.type,
+      author:      item.author,
+      icon:        item.icon,
+      title:       item.title,
+      description: item.description ?? null,
+      status:      item.status ?? 'pending',
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapWishRow(data);
+}
+
+export async function updateWishlistItem(id, fields) {
+  const { error } = await supabase
+    .from('wishlists')
+    .update({
+      author:      fields.author,
+      icon:        fields.icon,
+      title:       fields.title,
+      description: fields.description ?? null,
+      status:      fields.status,
+    })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function toggleWishlistStatus(id, newStatus) {
+  const { error } = await supabase
+    .from('wishlists')
+    .update({ status: newStatus })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteWishlistItem(id) {
+  const { error } = await supabase.from('wishlists').delete().eq('id', id);
   if (error) throw error;
 }
