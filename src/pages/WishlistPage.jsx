@@ -233,10 +233,10 @@ export default function WishlistPage() {
     } catch (err) { console.error(err); }
   }
 
-  async function handleEditSave(form) {
+  async function handleEditSave(id, form) {
     try {
-      await updateWishItem(editItem.id, form);
-      setItems(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } : i));
+      await updateWishItem(id, form);
+      setItems(prev => prev.map(i => i.id === id ? { ...i, ...form } : i));
       invalidateWishlist();
     } catch (err) { console.error(err); }
     setEditItem(null);
@@ -339,7 +339,7 @@ export default function WishlistPage() {
         <WishModal onSave={handleAdd} onClose={() => setShowForm(false)} />
       )}
       {editItem && (
-        <WishModal initial={editItem} onSave={handleEditSave} onClose={() => setEditItem(null)} />
+        <WishModal initial={editItem} onSave={form => handleEditSave(editItem.id, form)} onClose={() => setEditItem(null)} />
       )}
     </div>
   );
