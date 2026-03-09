@@ -4,12 +4,12 @@ import gsap from 'gsap';
 import '../styles/home.css';
 
 const CARDS = [
-  { to: '/music',      icon: '🎵', title: 'Our Songs',     desc: 'Songs that remind me of us',          color: 'card-music' },
-  { to: '/letter',     icon: '💊', title: 'Lọ Thuốc',      desc: 'Những viên thuốc tình yêu của mình',  color: 'card-letter' },
-  { to: '/gallery',    icon: '🖼️', title: 'Our Memories',  desc: 'Moments I\'ll never forget',          color: 'card-gallery' },
-  { to: '/photobooth', icon: '📷', title: 'Photobooth',    desc: 'Ảnh booth chụp cùng nhau 🎞️',        color: 'card-photobooth' },
-  { to: '/wishlist',   icon: '🌙', title: 'Wishlist',      desc: 'Những điều mình muốn cùng nhau',      color: 'card-wishlist' },
-  { to: '/gift',       icon: '🎁', title: 'My Gift',       desc: 'Something magical awaits...',         color: 'card-gift', special: true },
+  { to: '/music',      icon: '🎵', title: 'Our Songs',     desc: 'Songs that remind me of us',           color: 'card-music' },
+  { to: '/letter',     icon: '💊', title: 'Lọ Thuốc',      desc: 'Những viên thuốc tình yêu của mình',   color: 'card-letter' },
+  { to: '/gallery',    icon: '🖼️', title: 'Our Memories',  desc: 'Moments I\'ll never forget',           color: 'card-gallery' },
+  { to: '/photobooth', icon: '📷', title: 'Photobooth',    desc: 'Ảnh booth chụp cùng nhau 🎞️',         color: 'card-photobooth' },
+  { to: '/wishlist',   icon: '✨', title: 'Wishlist',      desc: 'Những điều ước mình muốn cùng nhau',   color: 'card-wishlist' },
+  { to: '/gift',       icon: '🎁', title: 'My Gift',       desc: 'Something magical awaits...',          color: 'card-gift', special: true },
 ];
 
 function PetalsBg() {

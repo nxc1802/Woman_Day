@@ -40,7 +40,7 @@
   position: relative; z-index: 2;
   margin-bottom: 2.8rem;
 }
-/* 6 cards fill the 2-col grid evenly — no centering needed */
+/* 6 cards = clean 2×3 grid, no centering needed */
 
 /* Card */
 .menu-card {
@@ -88,12 +88,11 @@
 }
 .card-photobooth:hover { border-color: rgba(124,58,237,0.45); box-shadow: 0 20px 60px rgba(124,58,237,0.25); }
 
-/* Wishlist */
 .card-wishlist {
-  background: linear-gradient(145deg, rgba(99,102,241,0.1), rgba(167,139,250,0.05));
-  border-color: rgba(99,102,241,0.18);
+  background: linear-gradient(145deg, rgba(168,85,247,0.1), rgba(236,72,153,0.05));
+  border-color: rgba(168,85,247,0.18);
 }
-.card-wishlist:hover { border-color: rgba(99,102,241,0.45); box-shadow: 0 20px 60px rgba(99,102,241,0.25); }
+.card-wishlist:hover { border-color: rgba(168,85,247,0.45); box-shadow: 0 20px 60px rgba(168,85,247,0.25); }
 
 /* Special (gift) */
 .card-special { background: linear-gradient(145deg, rgba(236,72,153,0.16), rgba(249,168,201,0.06)); border-color: rgba(236,72,153,0.28); }

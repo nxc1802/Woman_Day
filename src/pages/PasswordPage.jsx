@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/password.css';
 import { PASSWORDS } from '../config/passwords';
-import { useAppData } from '../contexts/AppDataContext';
+import { prefetchAll } from '../lib/prefetch';
 
 /* Pick a random password entry once per session and cache it.
    A new entry is chosen every time the user opens a fresh tab/session. */
@@ -42,9 +42,8 @@ function HeartsBg() {
 }
 
 export default function PasswordPage() {
-  const navigate          = useNavigate();
-  const { initializeData } = useAppData();
-  const entry             = getSessionEntry();   // { password, hint } for this session
+  const navigate   = useNavigate();
+  const entry      = getSessionEntry();   // { password, hint } for this session
   const [password, setPassword] = useState('');
   const [error, setError]       = useState(false);
   const cardRef      = useRef(null);
@@ -77,14 +76,13 @@ export default function PasswordPage() {
   }
 
   function handleSuccess() {
-    // Start fetching data in the background while the unlock animation plays
-    initializeData();
     triggerExplosion();
     gsap.timeline()
       .to(iconRef.current, { rotation: 360, scale: 1.3, duration: 0.7, ease: 'back.out(2)' })
       .to(cardRef.current, { opacity: 0, scale: 0.88, y: -40, duration: 0.55, delay: 1.1,
         onComplete: () => {
           sessionStorage.setItem('love_unlocked', 'true');
+          prefetchAll(); // kick off background data fetch for all pages
           navigate('/home');
         }
       });

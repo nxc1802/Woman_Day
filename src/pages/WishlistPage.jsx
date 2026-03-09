@@ -1,97 +1,41 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/wishlist.css';
-import { insertWishlistItem, updateWishlistItem, deleteWishlistItem, toggleWishlistStatus } from '../lib/supabase';
-import { useAppData } from '../contexts/AppDataContext';
+import { insertWishItem, toggleWishItem, updateWishItem, deleteWishItem } from '../lib/supabase';
+import { getWishlist, invalidateWishlist } from '../lib/prefetch';
 
-const ICON_OPTIONS_GIFT  = ['🎁','💝','👗','💄','📚','🎮','💍','🌹','🎀','👠','🧸','🪞','💐','🍰','☕'];
-const ICON_OPTIONS_EVENT = ['🎡','🎢','🎪','🎭','🍜','🏖️','🎬','🌙','🎆','🎵','🏔️','🌸','🎑','🚗','🍣'];
+const GIFT_ICONS  = ['🎁','💝','👗','💍','👜','🌸','🍰','💄','🎀','📱','✈️','🛍️','💎','🕯️','🌹','🧸','🎧','📷','💐','🍫'];
+const EVENT_ICONS = ['🌟','🎡','🏖️','🍽️','🎬','📸','🌃','💃','🎠','🌄','🎭','🏕️','🎪','🚢','🌺','🎢','🎆','🛳️','🗺️','🌙'];
 
-/* ── Starfield background ── */
-function StarsBg() {
-  const stars = Array.from({ length: 35 }, (_, i) => ({
-    id: i,
-    left:  `${Math.random() * 100}%`,
-    top:   `${Math.random() * 100}%`,
-    size:  `${0.15 + Math.random() * 0.4}rem`,
-    dur:   `${2 + Math.random() * 4}s`,
-    delay: `${Math.random() * 5}s`,
-  }));
-  const shoots = Array.from({ length: 5 }, (_, i) => ({
-    id: i,
-    top:   `${10 + Math.random() * 30}%`,
-    delay: `${i * 3.5 + Math.random() * 2}s`,
-    dur:   `${0.7 + Math.random() * 0.5}s`,
-  }));
-  return (
-    <div className="wish-stars-bg">
-      {stars.map(s => (
-        <span key={s.id} className="wish-star" style={{
-          left: s.left, top: s.top, fontSize: s.size,
-          animationDuration: s.dur, animationDelay: s.delay,
-        }}>✦</span>
-      ))}
-      {shoots.map(s => (
-        <div key={s.id} className="wish-shoot" style={{
-          top: s.top, animationDelay: s.delay, animationDuration: s.dur,
-        }} />
-      ))}
-    </div>
-  );
-}
+const GIFT_COLORS = [
+  { bg: '#fff0f6', border: '#f9a8d4', text: '#9d174d' },
+  { bg: '#fdf4ff', border: '#e9d5ff', text: '#6d28d9' },
+  { bg: '#fffbf0', border: '#fde68a', text: '#92400e' },
+  { bg: '#fff1f2', border: '#fecdd3', text: '#be123c' },
+  { bg: '#f0fdf9', border: '#99f6e4', text: '#0f766e' },
+];
+const EVENT_COLORS = [
+  { bg: '#fdf2f8', border: '#f0abfc', text: '#86198f' },
+  { bg: '#f5f3ff', border: '#c4b5fd', text: '#4c1d95' },
+  { bg: '#fff7ed', border: '#fed7aa', text: '#9a3412' },
+  { bg: '#f0f9ff', border: '#bae6fd', text: '#0369a1' },
+  { bg: '#fdf2f8', border: '#fbcfe8', text: '#9d174d' },
+];
 
-/* ── Wish Card ── */
-function WishCard({ item, onOpen, onToggle, longPressHandlers, isConfirming }) {
-  return (
-    <div
-      className={`wish-card wish-${item.type} ${item.status === 'done' ? 'wish-done' : ''} ${isConfirming ? 'delete-mode' : ''}`}
-      {...longPressHandlers}
-      onClick={() => onOpen(item)}
-    >
-      <div className="wish-card-glow" />
-
-      {/* Status toggle */}
-      <button
-        className={`wish-status-btn ${item.status === 'done' ? 'done' : ''}`}
-        onClick={e => { e.stopPropagation(); onToggle(item); }}
-        title={item.status === 'done' ? 'Đánh dấu chưa xong' : 'Đánh dấu đã xong'}
-      >
-        {item.status === 'done' ? '✓' : '○'}
-      </button>
-
-      <div className="wish-card-icon">{item.icon || (item.type === 'gift' ? '🎁' : '🌟')}</div>
-      <div className="wish-card-body">
-        <h3 className={`wish-card-title ${item.status === 'done' ? 'done-title' : ''}`}>{item.title}</h3>
-        {item.description && (
-          <p className="wish-card-desc">{item.description.slice(0, 65)}{item.description.length > 65 ? '...' : ''}</p>
-        )}
-        <div className="wish-card-footer">
-          <span className={`wish-author-badge ${item.author === 'Anh' ? 'badge-anh' : 'badge-em'}`}>
-            {item.author === 'Anh' ? '💙' : '🩷'} {item.author}
-          </span>
-          {item.status === 'done' && <span className="wish-done-badge">✨ Đã thực hiện</span>}
-        </div>
-      </div>
-
-      {/* Delete confirm overlay */}
-      {isConfirming && (
-        <div className="wish-delete-overlay" onClick={e => e.stopPropagation()}>
-          <p className="delete-overlay-text">Xoá ước mơ này?</p>
-          <div className="delete-overlay-actions">
-            <button className="delete-overlay-cancel" onClick={e => { e.stopPropagation(); longPressHandlers.onCancelDelete(); }}>Huỷ</button>
-            <button className="delete-overlay-confirm" onClick={e => { e.stopPropagation(); longPressHandlers.onConfirmDelete(item.id); }}>Xoá 🗑️</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── Detail / Read Modal ── */
-function WishModal({ item, onClose, onEdit }) {
+/* ─── Add / Edit Modal ─────────────────────────────────────────── */
+function WishModal({ initial, onSave, onClose }) {
   const overlayRef = useRef(null);
   const cardRef    = useRef(null);
+  const isEdit     = !!initial;
+
+  const [form, setForm] = useState(initial
+    ? { type: initial.type, author: initial.author, icon: initial.icon, title: initial.title, description: initial.description || '' }
+    : { type: 'gift', author: 'Anh', icon: '🎁', title: '', description: '' }
+  );
+  const [saving, setSaving] = useState(false);
+
+  const icons = form.type === 'gift' ? GIFT_ICONS : EVENT_ICONS;
 
   useEffect(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.25 });
@@ -102,103 +46,48 @@ function WishModal({ item, onClose, onEdit }) {
     gsap.to(overlayRef.current, { opacity: 0, duration: 0.2, onComplete: onClose });
   }
 
-  return (
-    <div className="wish-overlay" ref={overlayRef} onClick={close}>
-      <div className="wish-modal" ref={cardRef} onClick={e => e.stopPropagation()}>
-        <button className="wish-modal-close" onClick={close}>✕</button>
-
-        <div className={`wish-modal-header ${item.type === 'gift' ? 'header-gift' : 'header-event'}`}>
-          <span className="wish-modal-icon">{item.icon || (item.type === 'gift' ? '🎁' : '🌟')}</span>
-          <div>
-            <p className="wish-modal-type">{item.type === 'gift' ? '🎁 Quà tặng' : '🌟 Sự kiện'}</p>
-            <h2 className={`wish-modal-title ${item.status === 'done' ? 'done-title' : ''}`}>{item.title}</h2>
-          </div>
-          <span className={`wish-author-badge ${item.author === 'Anh' ? 'badge-anh' : 'badge-em'}`}>
-            {item.author === 'Anh' ? '💙 Anh' : '🩷 Em'}
-          </span>
-        </div>
-
-        {item.description && (
-          <div className="wish-modal-body">
-            {item.description.split('\n').map((line, i) =>
-              line.trim() ? <p key={i} className="wish-modal-line">{line}</p> : <br key={i} />
-            )}
-          </div>
-        )}
-
-        {item.status === 'done' && (
-          <div className="wish-done-banner">✨ Đã thực hiện rồi!</div>
-        )}
-
-        <div className="wish-modal-footer">
-          <button className="wish-edit-btn" onClick={() => { onClose(); onEdit(item); }}>✏️ Sửa</button>
-          <span className="wish-modal-love">with love ❤️</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Shared Form ── */
-function WishForm({ initial, activeTab, onSave, onClose, isEdit }) {
-  const overlayRef = useRef(null);
-  const formRef    = useRef(null);
-  const [form, setForm] = useState(initial || {
-    type: activeTab, author: 'Anh', icon: '', title: '', description: '',
-  });
-  const [saving, setSaving] = useState(false);
-  const icons = form.type === 'gift' ? ICON_OPTIONS_GIFT : ICON_OPTIONS_EVENT;
-
-  useEffect(() => {
-    gsap.from(overlayRef.current, { opacity: 0, duration: 0.25 });
-    gsap.from(formRef.current, { opacity: 0, scale: 0.92, y: 30, duration: 0.4, ease: 'back.out(1.5)' });
-  }, []);
-
-  function close() {
-    gsap.to(overlayRef.current, { opacity: 0, duration: 0.2, onComplete: onClose });
+  function handleTypeChange(t) {
+    setForm(f => ({ ...f, type: t, icon: t === 'gift' ? '🎁' : '🌟' }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.title.trim() || saving) return;
     setSaving(true);
-    await onSave({ ...form, title: form.title.trim(), description: form.description.trim() });
+    await onSave({ ...form, title: form.title.trim(), description: form.description.trim() || null });
     close();
   }
 
   return (
     <div className="wish-overlay" ref={overlayRef} onClick={close}>
-      <div className="wish-form-modal" ref={formRef} onClick={e => e.stopPropagation()}>
+      <div className="wish-modal" ref={cardRef} onClick={e => e.stopPropagation()}>
         <button className="wish-modal-close" onClick={close}>✕</button>
-        <h2 className="wish-form-title">
-          {isEdit ? '✏️ Sửa ước mơ' : (form.type === 'gift' ? '🎁 Thêm quà tặng' : '🌟 Thêm sự kiện')}
+        <h2 className="wish-modal-title">
+          {isEdit ? '✏️ Sửa mục' : '✨ Thêm điều ước mới'}
         </h2>
 
         <form className="wish-form" onSubmit={handleSubmit}>
-          {/* Type selector — only in add mode */}
+          {/* Type selector */}
           {!isEdit && (
-            <div className="form-field">
-              <label className="form-label">Loại</label>
+            <div className="wish-form-field">
+              <label className="wish-form-label">Loại</label>
               <div className="wish-type-selector">
-                {[{ v: 'gift', label: '🎁 Quà tặng' }, { v: 'event', label: '🌟 Sự kiện' }].map(({ v, label }) => (
-                  <button key={v} type="button"
-                    className={`wish-type-btn ${form.type === v ? 'selected' : ''}`}
-                    onClick={() => setForm(f => ({ ...f, type: v, icon: '' }))}
-                  >{label}</button>
-                ))}
+                <button type="button" className={`wish-type-btn ${form.type === 'gift' ? 'active-gift' : ''}`}
+                  onClick={() => handleTypeChange('gift')}>🎁 Quà muốn nhận</button>
+                <button type="button" className={`wish-type-btn ${form.type === 'event' ? 'active-event' : ''}`}
+                  onClick={() => handleTypeChange('event')}>🌟 Kỷ niệm muốn có</button>
               </div>
             </div>
           )}
 
           {/* Author */}
-          <div className="form-field">
-            <label className="form-label">Ai muốn?</label>
-            <div className="author-selector">
+          <div className="wish-form-field">
+            <label className="wish-form-label">Ai muốn?</label>
+            <div className="wish-author-selector">
               {['Anh', 'Em'].map(a => (
                 <button key={a} type="button"
-                  className={`author-btn ${form.author === a ? (a === 'Anh' ? 'selected-anh' : 'selected-em') : ''}`}
-                  onClick={() => setForm(f => ({ ...f, author: a }))}
-                >
+                  className={`wish-author-btn ${form.author === a ? (a === 'Anh' ? 'sel-anh' : 'sel-em') : ''}`}
+                  onClick={() => setForm(f => ({ ...f, author: a }))}>
                   {a === 'Anh' ? '💙' : '🩷'} {a}
                 </button>
               ))}
@@ -206,34 +95,36 @@ function WishForm({ initial, activeTab, onSave, onClose, isEdit }) {
           </div>
 
           {/* Icon */}
-          <div className="form-field">
-            <label className="form-label">Icon</label>
-            <div className="icon-picker">
-              {icons.map(icon => (
-                <button key={icon} type="button"
-                  className={`icon-btn ${form.icon === icon ? 'selected' : ''}`}
-                  onClick={() => setForm(f => ({ ...f, icon }))}
-                >{icon}</button>
+          <div className="wish-form-field">
+            <label className="wish-form-label">Icon</label>
+            <div className="wish-icon-picker">
+              {icons.map(ic => (
+                <button key={ic} type="button"
+                  className={`wish-icon-btn ${form.icon === ic ? 'selected' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, icon: ic }))}>{ic}</button>
               ))}
             </div>
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Tên / tiêu đề *</label>
-            <input className="form-input" placeholder={form.type === 'gift' ? 'Món quà bạn muốn...' : 'Sự kiện bạn muốn làm...'}
+          {/* Title */}
+          <div className="wish-form-field">
+            <label className="wish-form-label">Tên *</label>
+            <input className="wish-form-input" placeholder={form.type === 'gift' ? 'Tên món quà...' : 'Tên sự kiện / kỷ niệm...'}
               value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} maxLength={80} required />
           </div>
 
-          <div className="form-field">
-            <label className="form-label">Mô tả thêm (không bắt buộc)</label>
-            <textarea className="form-textarea" placeholder="Kể thêm chi tiết..."
-              value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} />
+          {/* Description */}
+          <div className="wish-form-field">
+            <label className="wish-form-label">Mô tả (tùy chọn)</label>
+            <textarea className="wish-form-textarea" rows={3}
+              placeholder={form.type === 'gift' ? 'Link, màu sắc, size...' : 'Muốn đi đâu, làm gì...'}
+              value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           </div>
 
-          <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={close}>Hủy</button>
-            <button type="submit" className="btn-save wish-btn-save" disabled={saving}>
-              {saving ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi 💾' : 'Thêm vào 🌙'}
+          <div className="wish-form-actions">
+            <button type="button" className="wish-btn-cancel" onClick={close}>Hủy</button>
+            <button type="submit" className="wish-btn-save" disabled={saving}>
+              {saving ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi 💾' : 'Thêm vào danh sách ✨'}
             </button>
           </div>
         </form>
@@ -242,165 +133,214 @@ function WishForm({ initial, activeTab, onSave, onClose, isEdit }) {
   );
 }
 
-/* ── Main Page ── */
-export default function WishlistPage() {
-  const { wishlists, setWishlists, wishlistsReady } = useAppData();
+/* ─── Wish Card ─────────────────────────────────────────────────── */
+function WishCard({ item, colorPalette, onToggle, onEdit, onDeleteConfirm, isDeleteConfirm }) {
+  const col   = colorPalette[item.id % colorPalette.length] ?? colorPalette[0];
+  const done  = item.status === 'done';
 
-  const [activeTab,      setActiveTab]      = useState('gift');
-  const [filterAuthor,   setFilterAuthor]   = useState('all');
-  const [openItem,       setOpenItem]       = useState(null);
-  const [editingItem,    setEditingItem]    = useState(null);
-  const [showAddForm,    setShowAddForm]    = useState(false);
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  return (
+    <div className={`wish-card ${done ? 'wish-done' : ''} ${isDeleteConfirm ? 'wish-deleting' : ''}`}
+      style={{ '--wc-bg': col.bg, '--wc-border': col.border, '--wc-text': col.text }}>
+
+      {/* Decorative top ribbon / star */}
+      <div className="wish-card-deco">{item.type === 'gift' ? '🎀' : '⭐'}</div>
+
+      {/* Icon */}
+      <div className="wish-card-icon">{item.icon}</div>
+
+      {/* Title */}
+      <h3 className="wish-card-title">{item.title}</h3>
+
+      {/* Author badge */}
+      <span className={`wish-author-badge ${item.author === 'Anh' ? 'badge-anh' : 'badge-em'}`}>
+        {item.author === 'Anh' ? '💙' : '🩷'} {item.author}
+      </span>
+
+      {/* Description */}
+      {item.description && (
+        <p className="wish-card-desc">{item.description}</p>
+      )}
+
+      {/* Actions row */}
+      <div className="wish-card-actions">
+        <button className={`wish-toggle-btn ${done ? 'toggle-done' : ''}`} onClick={e => { e.stopPropagation(); onToggle(item); }}>
+          {done
+            ? (item.type === 'gift' ? '🎉 Đã nhận' : '✅ Đã trải nghiệm')
+            : (item.type === 'gift' ? '○ Chưa nhận' : '○ Chưa làm')}
+        </button>
+        <button className="wish-edit-btn" onClick={e => { e.stopPropagation(); onEdit(item); }}>✏️</button>
+      </div>
+
+      {/* Delete confirm overlay (long press) */}
+      {isDeleteConfirm && (
+        <div className="wish-delete-overlay" onClick={e => e.stopPropagation()}>
+          <p className="wish-delete-text">Xoá mục này?</p>
+          <div className="wish-delete-actions">
+            <button className="wish-del-cancel" onClick={e => { e.stopPropagation(); onDeleteConfirm(null); }}>Huỷ</button>
+            <button className="wish-del-confirm" onClick={e => { e.stopPropagation(); onDeleteConfirm(item.id); }}>Xoá 🗑️</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Main Page ─────────────────────────────────────────────────── */
+export default function WishlistPage() {
+  const [items, setItems]               = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [activeTab, setActiveTab]       = useState('gift');
+  const [showForm, setShowForm]         = useState(false);
+  const [editItem, setEditItem]         = useState(null);
+  const [deleteId, setDeleteId]         = useState(null);
 
   const longPressTimer = useRef(null);
   const didLongPress   = useRef(false);
-  const headerRef = useRef(null);
-  const gridRef   = useRef(null);
+  const boardRef       = useRef(null);
+  const headerRef      = useRef(null);
 
   useEffect(() => {
-    if (!wishlistsReady) return;
-    const ctx = gsap.context(() => {
-      gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.7, ease: 'power3.out' });
-      if (gridRef.current?.children.length) {
-        gsap.from(gridRef.current.children, {
-          opacity: 0, y: 40, scale: 0.9, stagger: 0.1, duration: 0.55, ease: 'back.out(1.4)', delay: 0.2,
-        });
-      }
-    });
-    return () => ctx.revert();
-  }, [wishlistsReady]);
+    getWishlist()
+      .then(setItems)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const filtered = wishlists
-    .filter(w => w.type === activeTab)
-    .filter(w => filterAuthor === 'all' || w.author === filterAuthor);
+  // Entrance animation
+  useEffect(() => {
+    if (loading) return;
+    if (headerRef.current) {
+      gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.6, ease: 'power2.out' });
+    }
+    if (boardRef.current) {
+      const cards = boardRef.current.querySelectorAll('.wish-card, .wish-add-card');
+      gsap.from(cards, { opacity: 0, y: 40, scale: 0.92, stagger: 0.07, duration: 0.45, ease: 'back.out(1.3)', delay: 0.15 });
+    }
+  }, [loading, activeTab]);
 
-  /* ── Long press handlers ── */
-  function startLongPress(item) {
-    didLongPress.current = false;
-    longPressTimer.current = setTimeout(() => {
-      didLongPress.current = true;
-      setDeleteConfirmId(item.id);
-    }, 650);
-  }
-  function cancelLongPress() { clearTimeout(longPressTimer.current); }
-  function handleCardClick(item) {
-    if (didLongPress.current) { didLongPress.current = false; return; }
-    if (deleteConfirmId !== null) { setDeleteConfirmId(null); return; }
-    setOpenItem(item);
-  }
+  const displayed = items.filter(i => i.type === activeTab);
+  const giftCount  = items.filter(i => i.type === 'gift').length;
+  const eventCount = items.filter(i => i.type === 'event').length;
+  const giftDone   = items.filter(i => i.type === 'gift'  && i.status === 'done').length;
+  const eventDone  = items.filter(i => i.type === 'event' && i.status === 'done').length;
 
-  /* ── CRUD ── */
   async function handleAdd(form) {
-    const newItem = {
-      id:          Date.now(),
-      type:        form.type,
-      author:      form.author,
-      icon:        form.icon || (form.type === 'gift' ? '🎁' : '🌟'),
-      title:       form.title,
-      description: form.description || null,
-      status:      'pending',
-    };
+    const newItem = { id: Date.now(), ...form };
     try {
-      const saved = await insertWishlistItem(newItem);
-      setWishlists(prev => [...prev, saved]);
+      const saved = await insertWishItem(newItem);
+      setItems(prev => [...prev, saved]);
+      invalidateWishlist();
     } catch (err) { console.error(err); }
   }
 
   async function handleEditSave(form) {
-    const updated = { ...editingItem, ...form };
     try {
-      await updateWishlistItem(updated.id, updated);
-      setWishlists(prev => prev.map(w => w.id === updated.id ? updated : w));
+      await updateWishItem(editItem.id, form);
+      setItems(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } : i));
+      invalidateWishlist();
     } catch (err) { console.error(err); }
+    setEditItem(null);
   }
 
   async function handleToggle(item) {
-    const newStatus = item.status === 'done' ? 'pending' : 'done';
+    const next = item.status === 'done' ? 'pending' : 'done';
     try {
-      await toggleWishlistStatus(item.id, newStatus);
-      setWishlists(prev => prev.map(w => w.id === item.id ? { ...w, status: newStatus } : w));
+      await toggleWishItem(item.id, next);
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: next } : i));
+      invalidateWishlist();
     } catch (err) { console.error(err); }
   }
 
-  async function confirmDelete(id) {
-    setDeleteConfirmId(null);
+  async function handleDelete(id) {
+    setDeleteId(null);
+    if (!id) return;
     try {
-      await deleteWishlistItem(id);
-      setWishlists(prev => prev.filter(w => w.id !== id));
+      await deleteWishItem(id);
+      setItems(prev => prev.filter(i => i.id !== id));
+      invalidateWishlist();
     } catch (err) { console.error(err); }
   }
+
+  function startLongPress(id) {
+    didLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      didLongPress.current = true;
+      setDeleteId(id);
+    }, 650);
+  }
+
+  function cancelLongPress() { clearTimeout(longPressTimer.current); }
+
+  const colorPalette = activeTab === 'gift' ? GIFT_COLORS : EVENT_COLORS;
 
   return (
     <div className="wish-page">
       <div className="orb orb-1" /><div className="orb orb-2" />
-      <StarsBg />
+      <div className="wish-bg" />
       <Link to="/home" className="back-btn">← Back</Link>
 
+      {/* Header */}
       <div className="wish-header" ref={headerRef}>
-        <h1 className="page-title wish-title">Danh Sách Ước Mơ 🌙</h1>
-        <p className="page-subtitle wish-subtitle">Những điều mình muốn làm và nhận cùng nhau</p>
+        <h1 className="page-title">Danh Sách Ước Mơ ✨</h1>
+        <p className="page-subtitle">Những điều mình muốn nhận và muốn trải nghiệm cùng nhau</p>
 
         {/* Tab switcher */}
         <div className="wish-tabs">
-          <button className={`wish-tab ${activeTab === 'gift' ? 'active-gift' : ''}`} onClick={() => setActiveTab('gift')}>
-            🎁 Quà tặng
-            <span className="wish-tab-count">{wishlists.filter(w => w.type === 'gift').length}</span>
+          <button
+            className={`wish-tab ${activeTab === 'gift' ? 'active' : ''}`}
+            onClick={() => setActiveTab('gift')}
+          >
+            🎁 Quà muốn nhận
+            <span className="wish-tab-badge">{giftDone}/{giftCount}</span>
           </button>
-          <button className={`wish-tab ${activeTab === 'event' ? 'active-event' : ''}`} onClick={() => setActiveTab('event')}>
-            🌟 Sự kiện
-            <span className="wish-tab-count">{wishlists.filter(w => w.type === 'event').length}</span>
+          <button
+            className={`wish-tab ${activeTab === 'event' ? 'active' : ''}`}
+            onClick={() => setActiveTab('event')}
+          >
+            🌟 Kỷ niệm muốn có
+            <span className="wish-tab-badge">{eventDone}/{eventCount}</span>
           </button>
-        </div>
-
-        {/* Author filter */}
-        <div className="author-filter wish-author-filter">
-          {['all', 'Anh', 'Em'].map(f => (
-            <button key={f} className={`filter-tab ${filterAuthor === f ? 'active' : ''}`}
-              onClick={() => setFilterAuthor(f)}>
-              {f === 'all' ? '🌸 Tất cả' : f === 'Anh' ? '💙 Anh muốn' : '🩷 Em muốn'}
-            </button>
-          ))}
         </div>
       </div>
 
-      <div className="wish-grid" ref={gridRef}>
-        {!wishlistsReady && (
-          <div className="letters-loading">Đang tải ước mơ... 🌙</div>
-        )}
+      {/* Board */}
+      <div className="wish-board" ref={boardRef}>
+        {loading && <div className="wish-loading">Đang tải... ✨</div>}
 
-        {filtered.map(item => (
-          <WishCard
-            key={item.id}
-            item={item}
-            onOpen={handleCardClick}
-            onToggle={handleToggle}
-            isConfirming={deleteConfirmId === item.id}
-            longPressHandlers={{
-              onMouseDown:      () => startLongPress(item),
-              onMouseUp:        cancelLongPress,
-              onMouseLeave:     cancelLongPress,
-              onTouchStart:     () => startLongPress(item),
-              onTouchEnd:       cancelLongPress,
-              onTouchMove:      cancelLongPress,
-              onCancelDelete:   () => setDeleteConfirmId(null),
-              onConfirmDelete:  confirmDelete,
-            }}
-          />
+        {displayed.map(item => (
+          <div key={item.id}
+            onMouseDown={() => startLongPress(item.id)}
+            onMouseUp={cancelLongPress}
+            onMouseLeave={cancelLongPress}
+            onTouchStart={() => startLongPress(item.id)}
+            onTouchEnd={cancelLongPress}
+            onTouchMove={cancelLongPress}
+          >
+            <WishCard
+              item={item}
+              colorPalette={colorPalette}
+              onToggle={handleToggle}
+              onEdit={item => { if (!didLongPress.current) setEditItem(item); didLongPress.current = false; }}
+              onDeleteConfirm={handleDelete}
+              isDeleteConfirm={deleteId === item.id}
+            />
+          </div>
         ))}
 
         {/* Add card */}
-        <div className="wish-add-card" onClick={() => setShowAddForm(true)}>
-          <span className="add-card-icon">+</span>
-          <p className="add-card-text">
-            {activeTab === 'gift' ? 'Thêm quà mong muốn' : 'Thêm sự kiện muốn làm'}
-          </p>
+        <div className="wish-add-card" onClick={() => setShowForm(true)}>
+          <span className="wish-add-icon">+</span>
+          <p className="wish-add-text">Thêm điều ước mới</p>
         </div>
       </div>
 
-      {openItem    && <WishModal item={openItem} onClose={() => setOpenItem(null)} onEdit={item => { setOpenItem(null); setEditingItem(item); }} />}
-      {showAddForm && <WishForm activeTab={activeTab} onSave={handleAdd} onClose={() => setShowAddForm(false)} />}
-      {editingItem && <WishForm initial={editingItem} activeTab={activeTab} onSave={handleEditSave} onClose={() => setEditingItem(null)} isEdit />}
+      {/* Modals */}
+      {showForm && (
+        <WishModal onSave={handleAdd} onClose={() => setShowForm(false)} />
+      )}
+      {editItem && (
+        <WishModal initial={editItem} onSave={handleEditSave} onClose={() => setEditItem(null)} />
+      )}
     </div>
   );
 }

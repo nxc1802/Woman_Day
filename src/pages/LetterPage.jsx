@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/letter.css';
 import { insertLetter, updateLetter, deleteLetter } from '../lib/supabase';
-import { useAppData } from '../contexts/AppDataContext';
+import { getLetters, invalidateLetters } from '../lib/prefetch';
 
 const CARD_COLORS = [
   { bg: '#fce7f3', text: '#9d174d' },
@@ -290,7 +290,8 @@ function AddLetterModal({ onAdd, onClose }) {
 
 /* ---- Main Page ---- */
 export default function LetterPage() {
-  const { letters, setLetters, lettersReady } = useAppData();
+  const [letters, setLetters]                 = useState([]);
+  const [loading, setLoading]                 = useState(true);
   const [openLetter, setOpenLetter]           = useState(null);
   const [editingLetter, setEditingLetter]     = useState(null);
   const [showAddForm, setShowAddForm]         = useState(false);
@@ -300,12 +301,20 @@ export default function LetterPage() {
   const longPressTimer = useRef(null);
   const didLongPress   = useRef(false);
 
+  useEffect(() => {
+    getLetters()
+      .then(setLetters)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = filterAuthor === 'all' ? letters : letters.filter(l => l.author === filterAuthor);
 
   async function handleAdd(newLetter) {
     try {
       const saved = await insertLetter(newLetter);
       setLetters(prev => [...prev, saved]);
+      invalidateLetters();
     } catch (err) {
       console.error('Failed to save letter:', err);
     }
@@ -315,6 +324,7 @@ export default function LetterPage() {
     try {
       await updateLetter(updated.id, updated);
       setLetters(prev => prev.map(l => l.id === updated.id ? updated : l));
+      invalidateLetters();
     } catch (err) {
       console.error('Failed to update letter:', err);
     }
@@ -325,6 +335,7 @@ export default function LetterPage() {
     try {
       await deleteLetter(id);
       setLetters(prev => prev.filter(l => l.id !== id));
+      invalidateLetters();
     } catch (err) {
       console.error('Failed to delete letter:', err);
     }
@@ -375,7 +386,7 @@ export default function LetterPage() {
       </div>
 
       <div className="letters-board">
-        {!lettersReady && (
+        {loading && (
           <div className="letters-loading">Đang tải thư... 💌</div>
         )}
         {filtered.map(letter => (
