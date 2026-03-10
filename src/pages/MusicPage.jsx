@@ -3,36 +3,35 @@ import { Link } from 'react-router-dom';
 import { Howl } from 'howler';
 import gsap from 'gsap';
 import '../styles/music.css';
+import { getSongs, getPhotos } from '../lib/prefetch';
 
 /* Pool of solo photos — shuffled once at module load, no repeats across songs */
-const ANH_HONG_POOL = [
-  'IMG_0570.JPG','IMG_0571.JPG','IMG_0572.JPG','IMG_0573.JPG','IMG_0574.JPG',
-  'IMG_0575.JPG','IMG_0576.JPG','IMG_0577.JPG','IMG_0594.JPG','IMG_0595.JPG',
-  'IMG_0596.JPG','IMG_0597.JPG','IMG_0598.JPG','IMG_0599.JPG','IMG_0600.JPG',
-  'IMG_0601.JPG','IMG_0602.JPG','IMG_0603.JPG','IMG_0604.JPG','IMG_0605.JPG',
-  'IMG_0606.JPG','IMG_0607.JPG','IMG_0814.JPG','IMG_0817.JPG','IMG_0819.JPG',
-  'IMG_0820.JPG','IMG_0821.JPG','IMG_0823.JPG','IMG_0830.JPG','IMG_0833.JPG',
-  'IMG_0834.JPG','IMG_0835.JPG','IMG_0836.JPG','IMG_0837.JPG','IMG_0838.JPG',
-  'IMG_0839.JPG','IMG_0840.JPG','IMG_0841.JPG','IMG_0842.JPG','IMG_0843.JPG',
-  'IMG_0844.JPG','IMG_0845.JPG','IMG_0846.JPG','IMG_0847.JPG','IMG_0848.JPG',
-  'IMG_0851.JPG','IMG_0852.JPG','IMG_0951.JPG','IMG_0952.JPG','IMG_0953.JPG',
-  'IMG_0955.JPG','IMG_0956.JPG','IMG_0957.JPG','IMG_0966.JPG','IMG_1099.JPG',
-  'IMG_1100.JPG','IMG_1628.JPG','IMG_1633.JPG','IMG_1634.JPG','IMG_1647.JPG',
-  'IMG_1648.JPG','IMG_1649.JPG','IMG_1839.JPG','IMG_1842.JPG','IMG_1843.JPG',
-];
+const STATIC_ANH_HONG_POOL = [
+  'IMG_0570.JPG', 'IMG_0571.JPG', 'IMG_0572.JPG', 'IMG_0573.JPG', 'IMG_0574.JPG',
+  'IMG_0575.JPG', 'IMG_0576.JPG', 'IMG_0577.JPG', 'IMG_0594.JPG', 'IMG_0595.JPG',
+  'IMG_0596.JPG', 'IMG_0597.JPG', 'IMG_0598.JPG', 'IMG_0599.JPG', 'IMG_0600.JPG',
+  'IMG_0601.JPG', 'IMG_0602.JPG', 'IMG_0603.JPG', 'IMG_0604.JPG', 'IMG_0605.JPG',
+  'IMG_0606.JPG', 'IMG_0607.JPG', 'IMG_0814.JPG', 'IMG_0817.JPG', 'IMG_0819.JPG',
+  'IMG_0820.JPG', 'IMG_0821.JPG', 'IMG_0823.JPG', 'IMG_0830.JPG', 'IMG_0833.JPG',
+  'IMG_0834.JPG', 'IMG_0835.JPG', 'IMG_0836.JPG', 'IMG_0837.JPG', 'IMG_0838.JPG',
+  'IMG_0839.JPG', 'IMG_0840.JPG', 'IMG_0841.JPG', 'IMG_0842.JPG', 'IMG_0843.JPG',
+  'IMG_0844.JPG', 'IMG_0845.JPG', 'IMG_0846.JPG', 'IMG_0847.JPG', 'IMG_0848.JPG',
+  'IMG_0851.JPG', 'IMG_0852.JPG', 'IMG_0951.JPG', 'IMG_0952.JPG', 'IMG_0953.JPG',
+  'IMG_0955.JPG', 'IMG_0956.JPG', 'IMG_0957.JPG', 'IMG_0966.JPG', 'IMG_1099.JPG',
+  'IMG_1100.JPG', 'IMG_1628.JPG', 'IMG_1633.JPG', 'IMG_1634.JPG', 'IMG_1647.JPG',
+  'IMG_1648.JPG', 'IMG_1649.JPG', 'IMG_1839.JPG', 'IMG_1842.JPG', 'IMG_1843.JPG',
+].map(f => `/assets/images/Anh_Hong/${f}`);
 
-function pickUniqueCovers(count) {
-  const shuffled = [...ANH_HONG_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count).map(f => `/assets/images/Anh_Hong/${f}`);
+function pickUniqueCovers(pool, count) {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
 }
 
-const COVERS = pickUniqueCovers(4);
-
-const SONGS = [
-  { id: 0, title: 'Chiếc Khăn Gió Ấm', artist: 'Khánh Phương x meChill', cover: COVERS[0], src: '/assets/music/Chiếc Khăn Gió Ấm (Lofi Lyrics) - Khánh Phương x meChill _ gửi cho em đêm lung linh Hot  Tiktok - meChill.mp3' },
-  { id: 1, title: 'Hôn Lễ Của Em',      artist: 'Hiền Hồ',                cover: COVERS[1], src: '/assets/music/HÔN LỄ CỦA EM - HIỀN HỒ  Solo Version  Sáng tác Trọng Nhân - Hiền Hồ Official.mp3' },
-  { id: 2, title: 'Thằng Điên',         artist: 'JustaTee x Phương Ly',   cover: COVERS[2], src: '/assets/music/THẰNG ĐIÊN  JUSTATEE x PHƯƠNG LY  OFFICIAL MV - JustaTeeMusic.mp3' },
-  { id: 3, title: 'Ai Đưa Em Về',       artist: 'TIA ft. Lê Thiện Hiếu',  cover: COVERS[3], src: '/assets/music/TIA - Ai Đưa Em Về  Official M_V  Ft. Lê Thiện Hiếu (Low Cortisol Song) - TIA.mp3' },
+const STATIC_SONGS = [
+  { id: 0, title: 'Chiếc Khăn Gió Ấm', artist: 'Khánh Phương x meChill', src: '/assets/music/Chiếc Khăn Gió Ấm (Lofi Lyrics) - Khánh Phương x meChill _ gửi cho em đêm lung linh Hot  Tiktok - meChill.mp3' },
+  { id: 1, title: 'Hôn Lễ Của Em', artist: 'Hiền Hồ', src: '/assets/music/HÔN LỄ CỦA EM - HIỀN HỒ  Solo Version  Sáng tác Trọng Nhân - Hiền Hồ Official.mp3' },
+  { id: 2, title: 'Thằng Điên', artist: 'JustaTee x Phương Ly', src: '/assets/music/THẰNG ĐIÊN  JUSTATEE x PHƯƠNG LY  OFFICIAL MV - JustaTeeMusic.mp3' },
+  { id: 3, title: 'Ai Đưa Em Về', artist: 'TIA ft. Lê Thiện Hiếu', src: '/assets/music/TIA - Ai Đưa Em Về  Official M_V  Ft. Lê Thiện Hiếu (Low Cortisol Song) - TIA.mp3' },
 ];
 
 function formatTime(s) {
@@ -43,6 +42,9 @@ function formatTime(s) {
 }
 
 export default function MusicPage() {
+  const [songs, setSongs] = useState([]);
+  const [covers, setCovers] = useState([]);
+  const [ready, setReady] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -53,11 +55,43 @@ export default function MusicPage() {
   const headerRef = useRef(null);
   const playerRef = useRef(null);
 
+  // Load songs & covers from Supabase or static fallback
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      // Get songs
+      let songList = STATIC_SONGS;
+      try {
+        const dbSongs = await getSongs();
+        if (dbSongs && dbSongs.length > 0) songList = dbSongs;
+      } catch { }
+
+      // Get cover photos (solo photos)
+      let coverPool = STATIC_ANH_HONG_POOL;
+      try {
+        const dbPhotos = await getPhotos();
+        if (dbPhotos && dbPhotos.length > 0) {
+          const soloPhotos = dbPhotos.filter(p => p.type === 'solo').map(p => p.src);
+          if (soloPhotos.length > 0) coverPool = soloPhotos;
+        }
+      } catch { }
+
+      if (!cancelled) {
+        const selectedCovers = pickUniqueCovers(coverPool, songList.length);
+        setSongs(songList.map((s, i) => ({ ...s, cover: selectedCovers[i] || coverPool[0] })));
+        setCovers(selectedCovers);
+        setReady(true);
+      }
+    }
+
+    init();
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     gsap.from(headerRef.current, { opacity: 0, y: -30, duration: 0.8 });
     gsap.from(playerRef.current, { opacity: 0, y: 40, duration: 0.8, delay: 0.3, ease: 'back.out(1.4)' });
-    // NOTE: Do NOT use gsap.from on .song-item — GSAP sets inline opacity:0
-    // which persists across React re-renders. Use CSS animation instead.
     return () => { howlRef.current?.unload(); clearInterval(progressInterval.current); };
   }, []);
 
@@ -84,33 +118,34 @@ export default function MusicPage() {
     setCurrentIdx(idx);
     setProgress(0); setCurrentTime(0); setDuration(0);
 
-    const song = SONGS[idx];
+    const song = songs[idx];
+    if (!song) return;
     howlRef.current = new Howl({
       src: [song.src],
       html5: true,
       onplay: () => { setIsPlaying(true); startProgress(); },
       onpause: () => { setIsPlaying(false); stopProgress(); },
       onstop: () => { setIsPlaying(false); stopProgress(); setProgress(0); },
-      onend: () => { setCurrentIdx(i => { const next = (i + 1) % SONGS.length; loadSong(next, true); return i; }); },
+      onend: () => { setCurrentIdx(i => { const next = (i + 1) % songs.length; loadSong(next, true); return i; }); },
       onloaderror: () => console.warn('Could not load:', song.src),
     });
     if (autoPlay) howlRef.current.play();
-  }, [startProgress, stopProgress]);
+  }, [startProgress, stopProgress, songs]);
 
   const togglePlay = useCallback(() => {
-    if (!howlRef.current) { if (SONGS.length) loadSong(0, true); return; }
+    if (!howlRef.current) { if (songs.length) loadSong(0, true); return; }
     isPlaying ? howlRef.current.pause() : howlRef.current.play();
-  }, [isPlaying, loadSong]);
+  }, [isPlaying, loadSong, songs.length]);
 
   const prevSong = useCallback(() => {
     if (currentIdx < 0) return;
     if (howlRef.current?.seek() > 2) { howlRef.current.seek(0); return; }
-    loadSong((currentIdx - 1 + SONGS.length) % SONGS.length, isPlaying);
-  }, [currentIdx, isPlaying, loadSong]);
+    loadSong((currentIdx - 1 + songs.length) % songs.length, isPlaying);
+  }, [currentIdx, isPlaying, loadSong, songs.length]);
 
   const nextSong = useCallback(() => {
-    loadSong(((currentIdx < 0 ? 0 : currentIdx) + 1) % SONGS.length, isPlaying);
-  }, [currentIdx, isPlaying, loadSong]);
+    loadSong(((currentIdx < 0 ? 0 : currentIdx) + 1) % songs.length, isPlaying);
+  }, [currentIdx, isPlaying, loadSong, songs.length]);
 
   const handleProgressClick = useCallback((e) => {
     if (!howlRef.current) return;
@@ -122,7 +157,8 @@ export default function MusicPage() {
     setCurrentTime(pct * dur);
   }, []);
 
-  const currentSong = currentIdx >= 0 ? SONGS[currentIdx] : null;
+  const currentSong = currentIdx >= 0 ? songs[currentIdx] : null;
+  const defaultCover = covers[0] || STATIC_ANH_HONG_POOL[0];
 
   return (
     <div className="music-page">
@@ -143,7 +179,7 @@ export default function MusicPage() {
         <div className={`np-vinyl ${isPlaying ? 'playing' : ''}`}>
           <div className="vinyl-outer">
             <div className="vinyl-inner">
-              <img src={currentSong?.cover || COVERS[0]} alt="cover" />
+              <img src={currentSong?.cover || defaultCover} alt="cover" />
             </div>
           </div>
           {isPlaying && <>
@@ -175,7 +211,7 @@ export default function MusicPage() {
 
       {/* Playlist */}
       <div className="playlist">
-        {SONGS.map((song, i) => (
+        {songs.map((song, i) => (
           <div key={song.id}
             className={`song-item ${currentIdx === i ? 'active' : ''} ${currentIdx === i && isPlaying ? 'playing' : ''}`}
             onClick={() => loadSong(i, true)}
@@ -187,7 +223,7 @@ export default function MusicPage() {
             </div>
             <div className="song-play-ind">
               {currentIdx === i && isPlaying
-                ? <><div className="ind-bar"/><div className="ind-bar"/><div className="ind-bar"/></>
+                ? <><div className="ind-bar" /><div className="ind-bar" /><div className="ind-bar" /></>
                 : <span style={{ color: 'rgba(249,168,201,0.35)', fontSize: '1rem' }}>▶</span>
               }
             </div>

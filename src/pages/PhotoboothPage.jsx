@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/photobooth.css';
+import { getPhotos } from '../lib/prefetch';
 
-/* Each image is a complete 4-frame photobooth strip with its own border & branding */
-const PHOTOS = [
+/* Static fallback - each image is a complete 4-frame photobooth strip */
+const STATIC_PHOTOS = [
   '/assets/images/photobooth/z7596350399168_6f295dc09637e7ff5aad72d3a37329ad.jpg',
   '/assets/images/photobooth/z7596350431285_e097b361d32bd6eab07007bd736b416f.jpg',
   '/assets/images/photobooth/z7596350434610_35ac4c79a3807bd29e703a09b83dace4.jpg',
@@ -15,12 +16,12 @@ const PHOTOS = [
 
 /* Per-strip sway config so each floats at its own rhythm */
 const STRIP_CONFIG = [
-  { rot: -2.5, swayDur: 5.2, swayDelay: 0    },
-  { rot:  1.8, swayDur: 6.1, swayDelay: 0.8  },
-  { rot: -1.2, swayDur: 4.8, swayDelay: 1.5  },
-  { rot:  3.0, swayDur: 5.7, swayDelay: 0.4  },
-  { rot: -3.5, swayDur: 6.4, swayDelay: 1.1  },
-  { rot:  2.2, swayDur: 5.0, swayDelay: 1.9  },
+  { rot: -2.5, swayDur: 5.2, swayDelay: 0 },
+  { rot: 1.8, swayDur: 6.1, swayDelay: 0.8 },
+  { rot: -1.2, swayDur: 4.8, swayDelay: 1.5 },
+  { rot: 3.0, swayDur: 5.7, swayDelay: 0.4 },
+  { rot: -3.5, swayDur: 6.4, swayDelay: 1.1 },
+  { rot: 2.2, swayDur: 5.0, swayDelay: 1.9 },
 ];
 
 /* ---- Petal/Snow background (same style as HomePage) ---- */
@@ -31,7 +32,7 @@ function PetalsBg() {
     icon: BG_ICONS[i % BG_ICONS.length],
     left: `${(i / 28) * 100}%`,
     size: `${0.7 + Math.random() * 0.9}rem`,
-    dur:  `${13 + Math.random() * 12}s`,
+    dur: `${13 + Math.random() * 12}s`,
     delay: `${Math.random() * 12}s`,
     drift: `${Math.random() * 80 - 40}px`,
   }));
@@ -51,7 +52,7 @@ function PetalsBg() {
 /* ---- Lightbox ---- */
 function Lightbox({ src, idx, total, onPrev, onNext, onClose }) {
   const overlayRef = useRef(null);
-  const imgRef     = useRef(null);
+  const imgRef = useRef(null);
 
   useEffect(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.22 });
@@ -63,9 +64,9 @@ function Lightbox({ src, idx, total, onPrev, onNext, onClose }) {
   }
 
   function handleKey(e) {
-    if (e.key === 'ArrowLeft')  onPrev();
+    if (e.key === 'ArrowLeft') onPrev();
     if (e.key === 'ArrowRight') onNext();
-    if (e.key === 'Escape')     close();
+    if (e.key === 'Escape') close();
   }
 
   useEffect(() => {
@@ -88,9 +89,22 @@ function Lightbox({ src, idx, total, onPrev, onNext, onClose }) {
 
 /* ---- Main Page ---- */
 export default function PhotoboothPage() {
-  const headerRef  = useRef(null);
-  const stripsRef  = useRef([]);
+  const headerRef = useRef(null);
+  const stripsRef = useRef([]);
+  const [photos, setPhotos] = useState(STATIC_PHOTOS);
   const [lightboxIdx, setLightboxIdx] = useState(null);
+
+  // Load photobooth photos from Supabase
+  useEffect(() => {
+    getPhotos().then(data => {
+      if (data && data.length > 0) {
+        const boothPhotos = data.filter(p => p.category === 'photobooth').map(p => p.src);
+        if (boothPhotos.length > 0) {
+          setPhotos(boothPhotos);
+        }
+      }
+    });
+  }, []);
 
   useEffect(() => {
     /* Header entrance */
@@ -113,10 +127,10 @@ export default function PhotoboothPage() {
   }, []);
 
   function prevPhoto() {
-    setLightboxIdx(i => (i - 1 + PHOTOS.length) % PHOTOS.length);
+    setLightboxIdx(i => (i - 1 + photos.length) % photos.length);
   }
   function nextPhoto() {
-    setLightboxIdx(i => (i + 1) % PHOTOS.length);
+    setLightboxIdx(i => (i + 1) % photos.length);
   }
 
   return (
@@ -133,7 +147,7 @@ export default function PhotoboothPage() {
       </div>
 
       <div className="pb-gallery">
-        {PHOTOS.map((src, i) => {
+        {photos.map((src, i) => {
           const cfg = STRIP_CONFIG[i % STRIP_CONFIG.length];
           return (
             <div
@@ -162,9 +176,9 @@ export default function PhotoboothPage() {
 
       {lightboxIdx !== null && (
         <Lightbox
-          src={PHOTOS[lightboxIdx]}
+          src={photos[lightboxIdx]}
           idx={lightboxIdx}
-          total={PHOTOS.length}
+          total={photos.length}
           onPrev={prevPhoto}
           onNext={nextPhoto}
           onClose={() => setLightboxIdx(null)}

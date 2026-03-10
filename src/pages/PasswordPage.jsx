@@ -3,19 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/password.css';
 import { PASSWORDS } from '../config/passwords';
-import { prefetchAll } from '../lib/prefetch';
+import { prefetchAll, getPasswords } from '../lib/prefetch';
 
 /* Pick a random password entry once per session and cache it.
    A new entry is chosen every time the user opens a fresh tab/session. */
-function getSessionEntry() {
+function getSessionEntry(list) {
   const cached = sessionStorage.getItem('love_pw_idx');
   if (cached !== null) {
     const idx = parseInt(cached, 10);
-    return PASSWORDS[idx] ?? PASSWORDS[0];
+    return list[idx % list.length] ?? list[0];
   }
-  const idx = Math.floor(Math.random() * PASSWORDS.length);
+  const idx = Math.floor(Math.random() * list.length);
   sessionStorage.setItem('love_pw_idx', String(idx));
-  return PASSWORDS[idx];
+  return list[idx];
 }
 
 const BG_EMOJIS = ['❤️', '🌸', '💕', '💗', '🌺', '💖', '✨', '🌷'];
@@ -42,19 +42,29 @@ function HeartsBg() {
 }
 
 export default function PasswordPage() {
-  const navigate   = useNavigate();
-  const entry      = getSessionEntry();   // { password, hint } for this session
+  const navigate = useNavigate();
+  const [passwordList, setPasswordList] = useState(PASSWORDS); // fallback to static
+  const [entry, setEntry] = useState(() => getSessionEntry(PASSWORDS));
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState(false);
-  const cardRef      = useRef(null);
-  const iconRef      = useRef(null);
+  const [error, setError] = useState(false);
+  const cardRef = useRef(null);
+  const iconRef = useRef(null);
   const explosionRef = useRef(null);
 
+  // Fetch passwords from Supabase, fallback to static
   useEffect(() => {
     if (sessionStorage.getItem('love_unlocked') === 'true') {
       navigate('/home', { replace: true });
       return;
     }
+
+    getPasswords().then(data => {
+      if (data && data.length > 0) {
+        setPasswordList(data);
+        setEntry(getSessionEntry(data));
+      }
+    });
+
     gsap.from(cardRef.current, { opacity: 0, y: 60, scale: 0.88, duration: 1.1, ease: 'back.out(1.6)' });
   }, [navigate]);
 
@@ -79,7 +89,8 @@ export default function PasswordPage() {
     triggerExplosion();
     gsap.timeline()
       .to(iconRef.current, { rotation: 360, scale: 1.3, duration: 0.7, ease: 'back.out(2)' })
-      .to(cardRef.current, { opacity: 0, scale: 0.88, y: -40, duration: 0.55, delay: 1.1,
+      .to(cardRef.current, {
+        opacity: 0, scale: 0.88, y: -40, duration: 0.55, delay: 1.1,
         onComplete: () => {
           sessionStorage.setItem('love_unlocked', 'true');
           prefetchAll(); // kick off background data fetch for all pages
@@ -128,11 +139,11 @@ export default function PasswordPage() {
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="72" height="72">
             <defs>
               <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f9a8c9"/>
-                <stop offset="100%" stopColor="#ec4899"/>
+                <stop offset="0%" stopColor="#f9a8c9" />
+                <stop offset="100%" stopColor="#ec4899" />
               </linearGradient>
             </defs>
-            <path d="M50 85C50 85 12 56 12 33C12 18 24 8 38 8C44 8 50 11 50 11C50 11 56 8 62 8C76 8 88 18 88 33C88 56 50 85 50 85Z" fill="url(#lg)"/>
+            <path d="M50 85C50 85 12 56 12 33C12 18 24 8 38 8C44 8 50 11 50 11C50 11 56 8 62 8C76 8 88 18 88 33C88 56 50 85 50 85Z" fill="url(#lg)" />
           </svg>
         </div>
 

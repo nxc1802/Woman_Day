@@ -95,3 +95,117 @@ export async function deleteWishItem(id) {
   const { error } = await supabase.from(WISH_TABLE).delete().eq('id', id);
   if (error) throw error;
 }
+
+/* ─── Passwords ────────────────────────────────────────────────────── */
+const PW_TABLE = 'passwords';
+
+export async function fetchPasswords() {
+  const { data, error } = await supabase
+    .from(PW_TABLE).select('*').order('id', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(r => ({ id: r.id, password: r.password, hint: r.hint }));
+}
+
+export async function insertPassword(pw) {
+  const { data, error } = await supabase
+    .from(PW_TABLE)
+    .insert({ password: pw.password, hint: pw.hint })
+    .select().single();
+  if (error) throw error;
+  return { id: data.id, password: data.password, hint: data.hint };
+}
+
+export async function updatePassword(id, fields) {
+  const { error } = await supabase.from(PW_TABLE)
+    .update({ password: fields.password, hint: fields.hint })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deletePassword(id) {
+  const { error } = await supabase.from(PW_TABLE).delete().eq('id', id);
+  if (error) throw error;
+}
+
+/* ─── Photos ───────────────────────────────────────────────────────── */
+const PHOTOS_TABLE = 'photos';
+
+export async function fetchPhotos(filters = {}) {
+  let q = supabase.from(PHOTOS_TABLE).select('*').order('id', { ascending: true });
+  if (filters.type) q = q.eq('type', filters.type);
+  if (filters.category) q = q.eq('category', filters.category);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []).map(r => ({ id: r.id, src: r.src, caption: r.caption, type: r.type, category: r.category }));
+}
+
+export async function insertPhoto(photo) {
+  const { data, error } = await supabase
+    .from(PHOTOS_TABLE)
+    .insert({ src: photo.src, caption: photo.caption || '', type: photo.type || 'solo', category: photo.category || 'gallery' })
+    .select().single();
+  if (error) throw error;
+  return { id: data.id, src: data.src, caption: data.caption, type: data.type, category: data.category };
+}
+
+export async function deletePhoto(id) {
+  const { error } = await supabase.from(PHOTOS_TABLE).delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function uploadPhotoFile(file) {
+  const ext = file.name.split('.').pop();
+  const path = `uploads/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from('photos').upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from('photos').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function deletePhotoFile(publicUrl) {
+  // Extract path from public URL
+  const match = publicUrl.match(/\/storage\/v1\/object\/public\/photos\/(.+)/);
+  if (!match) return;
+  const { error } = await supabase.storage.from('photos').remove([match[1]]);
+  if (error) throw error;
+}
+
+/* ─── Songs ────────────────────────────────────────────────────────── */
+const SONGS_TABLE = 'songs';
+
+export async function fetchSongs() {
+  const { data, error } = await supabase
+    .from(SONGS_TABLE).select('*').order('display_order', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(r => ({ id: r.id, title: r.title, artist: r.artist, src: r.src, displayOrder: r.display_order }));
+}
+
+export async function insertSong(song) {
+  const { data, error } = await supabase
+    .from(SONGS_TABLE)
+    .insert({ title: song.title, artist: song.artist || '', src: song.src, display_order: song.displayOrder || 0 })
+    .select().single();
+  if (error) throw error;
+  return { id: data.id, title: data.title, artist: data.artist, src: data.src, displayOrder: data.display_order };
+}
+
+export async function deleteSong(id) {
+  const { error } = await supabase.from(SONGS_TABLE).delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function uploadSongFile(file) {
+  const ext = file.name.split('.').pop();
+  const path = `uploads/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from('music').upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from('music').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function deleteSongFile(publicUrl) {
+  const match = publicUrl.match(/\/storage\/v1\/object\/public\/music\/(.+)/);
+  if (!match) return;
+  const { error } = await supabase.storage.from('music').remove([match[1]]);
+  if (error) throw error;
+}

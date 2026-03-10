@@ -2,33 +2,24 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/gift.css';
+import { getPhotos } from '../lib/prefetch';
 
-/* All 65 solo photos — random non-repeating queue */
-const ALL_PHOTOS = [
-  'IMG_0570','IMG_0571','IMG_0572','IMG_0573','IMG_0574',
-  'IMG_0575','IMG_0576','IMG_0577','IMG_0594','IMG_0595',
-  'IMG_0596','IMG_0597','IMG_0598','IMG_0599','IMG_0600',
-  'IMG_0601','IMG_0602','IMG_0603','IMG_0604','IMG_0605',
-  'IMG_0606','IMG_0607','IMG_0814','IMG_0817','IMG_0819',
-  'IMG_0820','IMG_0821','IMG_0823','IMG_0830','IMG_0833',
-  'IMG_0834','IMG_0835','IMG_0836','IMG_0837','IMG_0838',
-  'IMG_0839','IMG_0840','IMG_0841','IMG_0842','IMG_0843',
-  'IMG_0844','IMG_0845','IMG_0846','IMG_0847','IMG_0848',
-  'IMG_0851','IMG_0852','IMG_0951','IMG_0952','IMG_0953',
-  'IMG_0955','IMG_0956','IMG_0957','IMG_0966','IMG_1099',
-  'IMG_1100','IMG_1628','IMG_1633','IMG_1634','IMG_1647',
-  'IMG_1648','IMG_1649','IMG_1839','IMG_1842','IMG_1843',
+/* Static fallback — All 65 solo photos */
+const STATIC_PHOTOS = [
+  'IMG_0570', 'IMG_0571', 'IMG_0572', 'IMG_0573', 'IMG_0574',
+  'IMG_0575', 'IMG_0576', 'IMG_0577', 'IMG_0594', 'IMG_0595',
+  'IMG_0596', 'IMG_0597', 'IMG_0598', 'IMG_0599', 'IMG_0600',
+  'IMG_0601', 'IMG_0602', 'IMG_0603', 'IMG_0604', 'IMG_0605',
+  'IMG_0606', 'IMG_0607', 'IMG_0814', 'IMG_0817', 'IMG_0819',
+  'IMG_0820', 'IMG_0821', 'IMG_0823', 'IMG_0830', 'IMG_0833',
+  'IMG_0834', 'IMG_0835', 'IMG_0836', 'IMG_0837', 'IMG_0838',
+  'IMG_0839', 'IMG_0840', 'IMG_0841', 'IMG_0842', 'IMG_0843',
+  'IMG_0844', 'IMG_0845', 'IMG_0846', 'IMG_0847', 'IMG_0848',
+  'IMG_0851', 'IMG_0852', 'IMG_0951', 'IMG_0952', 'IMG_0953',
+  'IMG_0955', 'IMG_0956', 'IMG_0957', 'IMG_0966', 'IMG_1099',
+  'IMG_1100', 'IMG_1628', 'IMG_1633', 'IMG_1634', 'IMG_1647',
+  'IMG_1648', 'IMG_1649', 'IMG_1839', 'IMG_1842', 'IMG_1843',
 ].map(n => `/assets/images/Anh_Hong/${n}.JPG`);
-
-/* Queue that cycles through all photos in shuffled order, never repeating
-   until every photo has been shown once */
-let photoQueue = [];
-function nextPhoto() {
-  if (photoQueue.length === 0) {
-    photoQueue = [...ALL_PHOTOS].sort(() => Math.random() - 0.5);
-  }
-  return photoQueue.pop();
-}
 
 const LOVE_MESSAGES = [
   'I Love You ❤️',
@@ -59,7 +50,18 @@ let idCounter = 0;
 function genId() { return ++idCounter; }
 
 function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function randomPickSrc() { return nextPhoto(); }
+
+/* Queue that cycles through all photos in shuffled order, never repeating
+   until every photo has been shown once */
+let photoQueue = [];
+let photoPool = STATIC_PHOTOS;
+
+function nextPhoto() {
+  if (photoQueue.length === 0) {
+    photoQueue = [...photoPool].sort(() => Math.random() - 0.5);
+  }
+  return photoQueue.pop();
+}
 
 /* ---- Single falling item (photo or message) ---- */
 function FallingItem({ item, onEnd, onPhotoClick }) {
@@ -159,10 +161,24 @@ function SnowCanvas() {
 /* ---- Main Gift Page ---- */
 export default function GiftPage() {
   const [fallingItems, setFallingItems] = useState([]);
-  const [centerPhoto, setCenterPhoto] = useState(() => ALL_PHOTOS[Math.floor(Math.random() * ALL_PHOTOS.length)]);
+  const [centerPhoto, setCenterPhoto] = useState(() => STATIC_PHOTOS[Math.floor(Math.random() * STATIC_PHOTOS.length)]);
   const [centerFlash, setCenterFlash] = useState(false);
   const cardRef = useRef(null);
   const frameRef = useRef(null);
+
+  // Load photos from Supabase (solo only) for falling items
+  useEffect(() => {
+    getPhotos().then(data => {
+      if (data && data.length > 0) {
+        const soloPhotos = data.filter(p => p.type === 'solo').map(p => p.src);
+        if (soloPhotos.length > 0) {
+          photoPool = soloPhotos;
+          photoQueue = []; // reset queue with new pool
+          setCenterPhoto(soloPhotos[Math.floor(Math.random() * soloPhotos.length)]);
+        }
+      }
+    });
+  }, []);
 
   // GSAP entrance
   useEffect(() => {
@@ -179,7 +195,7 @@ export default function GiftPage() {
         return [...prev, {
           id: genId(),
           type: isPhoto ? 'photo' : 'message',
-          src: isPhoto ? randomPickSrc() : undefined,
+          src: isPhoto ? nextPhoto() : undefined,
           content: !isPhoto ? randomPick(LOVE_MESSAGES) : undefined,
           color: !isPhoto ? randomPick(MSG_COLORS) : undefined,
           left: `${2 + Math.random() * 92}%`,
@@ -237,7 +253,7 @@ export default function GiftPage() {
             <img src={centerPhoto} alt="My love" />
           </div>
           <div className="frame-hearts">
-            {['❤️','💕','💗','✨'].map((e, i) => (
+            {['❤️', '💕', '💗', '✨'].map((e, i) => (
               <span key={i} className="orbit-heart" style={{ '--delay': `${i * 0.5}s`, '--i': i }}>{e}</span>
             ))}
           </div>
@@ -254,7 +270,7 @@ export default function GiftPage() {
             Thank you for being my sunshine every single day. 🌸
           </p>
           <div className="gift-hearts">
-            {['❤️','💕','❤️'].map((e, i) => (
+            {['❤️', '💕', '❤️'].map((e, i) => (
               <span key={i} className="animate-heartbeat" style={{ display: 'inline-block', fontSize: i === 1 ? '1.4rem' : '1.8rem', animationDelay: `${i * 0.3}s` }}>{e}</span>
             ))}
           </div>

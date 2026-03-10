@@ -1,16 +1,22 @@
 /**
  * Module-level promise cache.
  * Call prefetchAll() right after unlock so data is ready when user navigates.
- * Pages call getLetters() / getWishlist() — reuses the in-flight or resolved promise.
+ * Pages call getLetters() / getWishlist() / etc. — reuses the in-flight or resolved promise.
  */
-import { fetchAllLetters, fetchAllWishlist } from './supabase';
+import { fetchAllLetters, fetchAllWishlist, fetchPasswords, fetchPhotos, fetchSongs } from './supabase';
 
-let lettersPromise  = null;
+let lettersPromise = null;
 let wishlistPromise = null;
+let passwordsPromise = null;
+let photosPromise = null;
+let songsPromise = null;
 
 export function prefetchAll() {
-  if (!lettersPromise)  lettersPromise  = fetchAllLetters().catch(() => []);
+  if (!lettersPromise) lettersPromise = fetchAllLetters().catch(() => []);
   if (!wishlistPromise) wishlistPromise = fetchAllWishlist().catch(() => []);
+  if (!passwordsPromise) passwordsPromise = fetchPasswords().catch(() => []);
+  if (!photosPromise) photosPromise = fetchPhotos().catch(() => []);
+  if (!songsPromise) songsPromise = fetchSongs().catch(() => []);
 }
 
 export function getLetters() {
@@ -23,6 +29,24 @@ export function getWishlist() {
   return wishlistPromise;
 }
 
+export function getPasswords() {
+  if (!passwordsPromise) passwordsPromise = fetchPasswords().catch(() => []);
+  return passwordsPromise;
+}
+
+export function getPhotos() {
+  if (!photosPromise) photosPromise = fetchPhotos().catch(() => []);
+  return photosPromise;
+}
+
+export function getSongs() {
+  if (!songsPromise) songsPromise = fetchSongs().catch(() => []);
+  return songsPromise;
+}
+
 /** Call after a write so next page load re-fetches fresh data */
-export function invalidateLetters()  { lettersPromise  = null; }
+export function invalidateLetters() { lettersPromise = null; }
 export function invalidateWishlist() { wishlistPromise = null; }
+export function invalidatePasswords() { passwordsPromise = null; }
+export function invalidatePhotos() { photosPromise = null; }
+export function invalidateSongs() { songsPromise = null; }

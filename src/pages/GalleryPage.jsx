@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/gallery.css';
+import { getPhotos } from '../lib/prefetch';
 
-const ALL_PHOTOS = [
+/* ---- Static fallback photos ---- */
+const STATIC_PHOTOS = [
   // Solo — Anh_Hong
   { src: '/assets/images/Anh_Hong/IMG_0836.JPG', caption: 'Radiantly beautiful 🌸', type: 'solo' },
   { src: '/assets/images/Anh_Hong/IMG_0837.JPG', caption: 'That smile 💕', type: 'solo' },
@@ -84,15 +86,29 @@ function MarqueeRow({ photos, direction = 'left', speed = 40, rowHeight = 220, o
 }
 
 export default function GalleryPage() {
+  const [allPhotos, setAllPhotos] = useState(STATIC_PHOTOS);
   const [filter, setFilter] = useState('all');
   const [lightbox, setLightbox] = useState(null);
   const [lbIdx, setLbIdx] = useState(0);
   const headerRef = useRef(null);
   const stripRef = useRef(null);
 
+  // Fetch photos from Supabase, merge with static or use as-is
+  useEffect(() => {
+    getPhotos().then(data => {
+      if (data && data.length > 0) {
+        // Only use gallery photos from Supabase
+        const galleryPhotos = data.filter(p => p.category === 'gallery' || !p.category);
+        if (galleryPhotos.length > 0) {
+          setAllPhotos(galleryPhotos);
+        }
+      }
+    });
+  }, []);
+
   const photos = useMemo(() =>
-    filter === 'all' ? ALL_PHOTOS : ALL_PHOTOS.filter(p => p.type === filter),
-  [filter]);
+    filter === 'all' ? allPhotos : allPhotos.filter(p => p.type === filter),
+    [filter, allPhotos]);
 
   // Split photos into 3 rows with different starting offsets
   const row1 = useMemo(() => rotate(photos, 0), [photos]);
@@ -137,7 +153,7 @@ export default function GalleryPage() {
         <p className="page-subtitle">{photos.length} precious moments</p>
 
         <div className="gallery-tabs">
-          {[['all','All ❤️'], ['solo','Hong 🌸'], ['couple','Us 💕']].map(([val, label]) => (
+          {[['all', 'All ❤️'], ['solo', 'Hong 🌸'], ['couple', 'Us 💕']].map(([val, label]) => (
             <button key={val}
               className={`tab-btn ${filter === val ? 'active' : ''}`}
               onClick={() => setFilter(val)}
@@ -148,9 +164,9 @@ export default function GalleryPage() {
 
       {/* Infinite marquee strips */}
       <div className="marquee-strips" ref={stripRef}>
-        <MarqueeRow photos={row1} direction="left"  speed={5} rowHeight={230} onPhotoClick={openLightbox} />
+        <MarqueeRow photos={row1} direction="left" speed={5} rowHeight={230} onPhotoClick={openLightbox} />
         <MarqueeRow photos={row2} direction="right" speed={6} rowHeight={200} onPhotoClick={openLightbox} />
-        <MarqueeRow photos={row3} direction="left"  speed={4.5} rowHeight={215} onPhotoClick={openLightbox} />
+        <MarqueeRow photos={row3} direction="left" speed={4.5} rowHeight={215} onPhotoClick={openLightbox} />
       </div>
 
       {/* Footer hint */}

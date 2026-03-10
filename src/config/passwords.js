@@ -53,3 +53,6 @@ export const PASSWORDS = [
     hint: 'Mỗi ngày uống ít nhất bao nhiêu bình nước? 💦',
   },
 ];
+
+/** Master password for /admin page */
+export const ADMIN_PASSWORD = 'admin2026';
