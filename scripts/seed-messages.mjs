@@ -11,8 +11,13 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://xtxczpjwssuxhcgrlusn.supabase.co';
-const SERVICE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0eGN6cGp3c3N1eGhjZ3JsdXNuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Mjg4NTI1NywiZXhwIjoyMDg4NDYxMjU3fQ.pTzSX0dIUjy-Ld573hOcE1cQW_itjn1p4fHXTYYAxgk';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  console.error('❌ Missing env vars. Run with: node --env-file=.env.local scripts/seed-messages.mjs');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
