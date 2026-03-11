@@ -209,3 +209,41 @@ export async function deleteSongFile(publicUrl) {
   const { error } = await supabase.storage.from('music').remove([match[1]]);
   if (error) throw error;
 }
+
+/* ─── Gift Messages ─────────────────────────────────────────────────── */
+const MSG_TABLE = 'gift_messages';
+
+const mapMessage = row => ({
+  id:           row.id,
+  text:         row.text,
+  displayOrder: row.display_order,
+});
+
+export async function fetchGiftMessages() {
+  const { data, error } = await supabase
+    .from(MSG_TABLE).select('*').order('display_order', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(mapMessage);
+}
+
+export async function insertGiftMessage(msg) {
+  const { data, error } = await supabase
+    .from(MSG_TABLE)
+    .insert({ text: msg.text, display_order: msg.displayOrder ?? 0 })
+    .select().single();
+  if (error) throw error;
+  return mapMessage(data);
+}
+
+export async function updateGiftMessage(id, fields) {
+  const update = {};
+  if (fields.text         !== undefined) update.text          = fields.text;
+  if (fields.displayOrder !== undefined) update.display_order = fields.displayOrder;
+  const { error } = await supabase.from(MSG_TABLE).update(update).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteGiftMessage(id) {
+  const { error } = await supabase.from(MSG_TABLE).delete().eq('id', id);
+  if (error) throw error;
+}

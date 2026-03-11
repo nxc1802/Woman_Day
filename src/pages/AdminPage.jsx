@@ -5,8 +5,9 @@ import {
     fetchPasswords, insertPassword, updatePassword, deletePassword,
     fetchPhotos, insertPhoto, deletePhoto, uploadPhotoFile, deletePhotoFile,
     fetchSongs, insertSong, deleteSong, uploadSongFile, deleteSongFile,
+    fetchGiftMessages, insertGiftMessage, updateGiftMessage, deleteGiftMessage,
 } from '../lib/supabase';
-import { invalidatePasswords, invalidatePhotos, invalidateSongs } from '../lib/prefetch';
+import { invalidatePasswords, invalidatePhotos, invalidateSongs, invalidateMessages } from '../lib/prefetch';
 import '../styles/admin.css';
 
 /* ============================================================
@@ -146,36 +147,67 @@ function PasswordModal({ initial, onSave, onClose }) {
 }
 
 /* ============================================================
-   Photos Tab
+   Photos Tab  — three sub-sections by usage area
    ============================================================ */
+
+const PHOTO_SECTIONS = [
+    {
+        key:      'solo',
+        label:    '🌸 Ảnh cá nhân',
+        desc:     'Dùng cho: Thư viện (solo), Ảnh bìa nhạc, Ảnh rơi Gift',
+        type:     'solo',
+        category: 'gallery',
+        filter:   p => p.type === 'solo' && p.category === 'gallery',
+    },
+    {
+        key:      'couple',
+        label:    '💕 Ảnh đôi',
+        desc:     'Dùng cho: Thư viện (couple)',
+        type:     'couple',
+        category: 'gallery',
+        filter:   p => p.type === 'couple' && p.category === 'gallery',
+    },
+    {
+        key:      'photobooth',
+        label:    '📷 Photobooth',
+        desc:     'Dùng cho: Trang Photobooth — mỗi ảnh là 1 strip 4 frame',
+        type:     'couple',
+        category: 'photobooth',
+        filter:   p => p.category === 'photobooth',
+    },
+];
+
 function PhotosTab({ showToast }) {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
-    const [modal, setModal] = useState(false);
-    const fileRef = useRef(null);
-    const [dragOver, setDragOver] = useState(false);
+    const [photoSection, setPhotoSection] = useState('solo');
+    const [allItems, setAllItems]         = useState([]);
+    const [loading, setLoading]           = useState(true);
+    const [uploading, setUploading]       = useState(false);
+    const [modal, setModal]               = useState(false);
+    const fileRef                         = useRef(null);
+
+    const section = PHOTO_SECTIONS.find(s => s.key === photoSection);
+    const items   = allItems.filter(section.filter);
 
     const load = useCallback(async () => {
         try {
             setLoading(true);
             const data = await fetchPhotos();
-            setItems(data);
+            setAllItems(data);
         } catch { showToast('❌ Không tải được photos', true); }
         finally { setLoading(false); }
     }, [showToast]);
 
     useEffect(() => { load(); }, [load]);
 
-    async function handleUpload(files, type, category, caption) {
+    async function handleUpload(files, caption) {
         setUploading(true);
         try {
             for (const file of files) {
                 const url = await uploadPhotoFile(file);
-                await insertPhoto({ src: url, caption: caption || file.name, type, category });
+                await insertPhoto({ src: url, caption: caption || file.name, type: section.type, category: section.category });
             }
             invalidatePhotos();
-            showToast(`✅ Đã upload ${files.length} ảnh`);
+            showToast(`✅ Đã upload ${files.length} ảnh vào "${section.label}"`);
             load();
         } catch (err) {
             showToast('❌ Lỗi upload: ' + err.message, true);
@@ -188,40 +220,45 @@ function PhotosTab({ showToast }) {
         if (!confirm('Xóa ảnh này?')) return;
         try {
             await deletePhoto(item.id);
-            // Try to delete from storage too (ignore errors for static files)
             try { await deletePhotoFile(item.src); } catch { }
+            setAllItems(prev => prev.filter(p => p.id !== item.id));
             invalidatePhotos();
             showToast('🗑️ Đã xóa ảnh');
-            load();
         } catch { showToast('❌ Lỗi khi xóa', true); }
     }
 
-    function handleDrop(e) {
-        e.preventDefault();
-        setDragOver(false);
-        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-        if (files.length) {
-            fileRef.current = files;
-            setModal(true);
-        }
-    }
+    const counts = {};
+    PHOTO_SECTIONS.forEach(s => { counts[s.key] = allItems.filter(s.filter).length; });
 
     return (
         <div className="admin-section">
             <div className="admin-section-header">
-                <h2>📸 Photos ({items.length})</h2>
-                <button className="admin-add-btn" onClick={() => { fileRef.current = null; setModal(true); }}>+ Upload</button>
+                <h2>📸 Photos ({allItems.length} tổng)</h2>
             </div>
 
-            <div
-                className={`admin-upload-area ${dragOver ? 'dragging' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => { fileRef.current = null; setModal(true); }}
-            >
-                <div className="upload-icon">📁</div>
-                <p>{uploading ? 'Đang upload...' : 'Kéo ảnh vào đây hoặc click để upload'}</p>
+            {/* Photo section sub-tabs */}
+            <div className="admin-photo-subtabs">
+                {PHOTO_SECTIONS.map(s => (
+                    <button
+                        key={s.key}
+                        className={`admin-photo-subtab ${photoSection === s.key ? 'active' : ''}`}
+                        onClick={() => setPhotoSection(s.key)}
+                    >
+                        {s.label}
+                        <span className="subtab-count">{counts[s.key]}</span>
+                    </button>
+                ))}
+            </div>
+
+            {/* Section info + upload */}
+            <div className="photo-section-info">
+                <span className="photo-section-desc">{section.desc}</span>
+                <button
+                    className="admin-add-btn"
+                    onClick={() => { fileRef.current = null; setModal(true); }}
+                >
+                    + Upload ảnh
+                </button>
             </div>
 
             {loading ? (
@@ -229,7 +266,7 @@ function PhotosTab({ showToast }) {
             ) : items.length === 0 ? (
                 <div className="admin-empty">
                     <div className="empty-icon">🖼️</div>
-                    <p>Chưa có ảnh nào trong database.<br />Ảnh static (trong thư mục public) vẫn hoạt động bình thường.</p>
+                    <p>Chưa có ảnh trong mục "{section.label}"</p>
                 </div>
             ) : (
                 <div className="admin-photo-grid">
@@ -238,7 +275,6 @@ function PhotosTab({ showToast }) {
                             <img src={item.src} alt={item.caption} loading="lazy" />
                             <div className="photo-overlay">
                                 <span className="photo-caption">{item.caption}</span>
-                                <span className="photo-badge">{item.type} • {item.category}</span>
                             </div>
                             <button className="admin-photo-del" onClick={() => handleDelete(item)}>✕</button>
                         </div>
@@ -248,6 +284,7 @@ function PhotosTab({ showToast }) {
 
             {modal && (
                 <PhotoUploadModal
+                    sectionLabel={section.label}
                     initialFiles={fileRef.current}
                     onUpload={handleUpload}
                     onClose={() => setModal(false)}
@@ -258,58 +295,156 @@ function PhotosTab({ showToast }) {
     );
 }
 
-function PhotoUploadModal({ initialFiles, onUpload, onClose, uploading }) {
-    const [files, setFiles] = useState(initialFiles || []);
-    const [type, setType] = useState('solo');
-    const [category, setCategory] = useState('gallery');
+function PhotoUploadModal({ sectionLabel, initialFiles, onUpload, onClose, uploading }) {
+    const [files, setFiles]     = useState(initialFiles || []);
     const [caption, setCaption] = useState('');
-    const inputRef = useRef(null);
-
-    function handleFileChange(e) {
-        setFiles(Array.from(e.target.files));
-    }
 
     function handleSubmit(e) {
         e.preventDefault();
         if (files.length === 0) return;
-        onUpload(files, type, category, caption);
+        onUpload(files, caption);
     }
 
     return (
         <div className="admin-modal-overlay" onClick={onClose}>
             <form className="admin-modal" onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
-                <h3>📸 Upload Ảnh</h3>
+                <h3>📸 Upload → {sectionLabel}</h3>
 
                 <label>Chọn ảnh</label>
                 <input
-                    ref={inputRef}
                     type="file"
                     accept="image/*"
                     multiple
-                    onChange={handleFileChange}
+                    onChange={e => setFiles(Array.from(e.target.files))}
                     style={{ display: 'block', background: 'none', border: 'none', padding: '0.5rem 0' }}
                 />
                 {files.length > 0 && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{files.length} file đã chọn</p>}
 
-                <label>Loại ảnh</label>
-                <select value={type} onChange={e => setType(e.target.value)}>
-                    <option value="solo">Solo (Ảnh cá nhân)</option>
-                    <option value="couple">Couple (Ảnh đôi)</option>
-                </select>
-
-                <label>Danh mục</label>
-                <select value={category} onChange={e => setCategory(e.target.value)}>
-                    <option value="gallery">Gallery (Thư viện ảnh)</option>
-                    <option value="photobooth">Photobooth (Ảnh booth)</option>
-                </select>
-
-                <label>Caption</label>
-                <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Mô tả ảnh (tùy chọn)..." />
+                <label>Caption (tùy chọn)</label>
+                <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Mô tả ảnh..." />
 
                 <div className="admin-modal-btns">
                     <button type="button" className="btn-cancel" onClick={onClose}>Hủy</button>
                     <button type="submit" className="admin-add-btn" disabled={uploading || files.length === 0}>
                         {uploading ? 'Đang upload...' : `Upload ${files.length} ảnh`}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+/* ============================================================
+   Messages Tab  — Gift page falling text
+   ============================================================ */
+function MessagesTab({ showToast }) {
+    const [items, setItems]     = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [modal, setModal]     = useState(null); // null | 'add' | { id, text, displayOrder }
+
+    const load = useCallback(async () => {
+        try {
+            setLoading(true);
+            const data = await fetchGiftMessages();
+            setItems(data);
+        } catch { showToast('❌ Không tải được messages', true); }
+        finally { setLoading(false); }
+    }, [showToast]);
+
+    useEffect(() => { load(); }, [load]);
+
+    async function handleSave(form) {
+        try {
+            if (modal === 'add') {
+                await insertGiftMessage({ text: form.text, displayOrder: items.length + 1 });
+                showToast('✅ Đã thêm tin nhắn');
+            } else {
+                await updateGiftMessage(modal.id, { text: form.text, displayOrder: modal.displayOrder });
+                showToast('✅ Đã cập nhật');
+            }
+            invalidateMessages();
+            setModal(null);
+            load();
+        } catch { showToast('❌ Lỗi khi lưu', true); }
+    }
+
+    async function handleDelete(item) {
+        if (!confirm(`Xóa "${item.text}"?`)) return;
+        try {
+            await deleteGiftMessage(item.id);
+            invalidateMessages();
+            showToast('🗑️ Đã xóa');
+            load();
+        } catch { showToast('❌ Lỗi khi xóa', true); }
+    }
+
+    return (
+        <div className="admin-section">
+            <div className="admin-section-header">
+                <h2>💬 Gift Messages ({items.length})</h2>
+                <button className="admin-add-btn" onClick={() => setModal('add')}>+ Thêm</button>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                Các dòng chữ rơi trên trang <strong>My Gift</strong>. Chỉnh sửa thoải mái ✨
+            </p>
+
+            {loading ? (
+                <div className="admin-loading">Đang tải</div>
+            ) : items.length === 0 ? (
+                <div className="admin-empty">
+                    <div className="empty-icon">💬</div>
+                    <p>Chưa có tin nhắn nào.</p>
+                </div>
+            ) : (
+                <div className="admin-msg-list">
+                    {items.map((item, i) => (
+                        <div key={item.id} className="admin-msg-item">
+                            <span className="admin-msg-num">{i + 1}</span>
+                            <span className="admin-msg-text">{item.text}</span>
+                            <div className="admin-actions">
+                                <button className="admin-edit-btn" onClick={() => setModal(item)}>✏️</button>
+                                <button className="admin-del-btn" onClick={() => handleDelete(item)}>🗑️</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {modal && (
+                <MessageModal
+                    initial={modal !== 'add' ? modal : null}
+                    onSave={handleSave}
+                    onClose={() => setModal(null)}
+                />
+            )}
+        </div>
+    );
+}
+
+function MessageModal({ initial, onSave, onClose }) {
+    const [text, setText] = useState(initial?.text ?? '');
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        if (!text.trim()) return;
+        onSave({ text: text.trim() });
+    }
+
+    return (
+        <div className="admin-modal-overlay" onClick={onClose}>
+            <form className="admin-modal" onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
+                <h3>{initial ? '✏️ Sửa tin nhắn' : '💬 Thêm tin nhắn'}</h3>
+                <label>Nội dung</label>
+                <input
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    placeholder="VD: I Love You ❤️"
+                    autoFocus
+                />
+                <div className="admin-modal-btns">
+                    <button type="button" className="btn-cancel" onClick={onClose}>Hủy</button>
+                    <button type="submit" className="admin-add-btn" disabled={!text.trim()}>
+                        {initial ? 'Lưu' : 'Thêm'}
                     </button>
                 </div>
             </form>
@@ -532,8 +667,9 @@ export default function AdminPage() {
                 <div className="admin-tabs">
                     {[
                         ['passwords', '🔐 Passwords'],
-                        ['photos', '📸 Photos'],
-                        ['music', '🎵 Music'],
+                        ['photos',    '📸 Photos'],
+                        ['music',     '🎵 Music'],
+                        ['messages',  '💬 Messages'],
                     ].map(([key, label]) => (
                         <button
                             key={key}
@@ -544,8 +680,9 @@ export default function AdminPage() {
                 </div>
 
                 {tab === 'passwords' && <PasswordTab showToast={showToast} />}
-                {tab === 'photos' && <PhotosTab showToast={showToast} />}
-                {tab === 'music' && <MusicTab showToast={showToast} />}
+                {tab === 'photos'    && <PhotosTab showToast={showToast} />}
+                {tab === 'music'     && <MusicTab showToast={showToast} />}
+                {tab === 'messages'  && <MessagesTab showToast={showToast} />}
             </div>
 
             {toastEl}

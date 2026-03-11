@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/gift.css';
-import { getPhotos } from '../lib/prefetch';
+import { getPhotos, getMessages } from '../lib/prefetch';
 
 /* Static fallback — All 65 solo photos */
 const STATIC_PHOTOS = [
@@ -21,7 +21,7 @@ const STATIC_PHOTOS = [
   'IMG_1648', 'IMG_1649', 'IMG_1839', 'IMG_1842', 'IMG_1843',
 ].map(n => `/assets/images/Anh_Hong/${n}.JPG`);
 
-const LOVE_MESSAGES = [
+const FALLBACK_MESSAGES = [
   'I Love You ❤️',
   'You Are My World 🌍',
   'Forever With You 💕',
@@ -37,6 +37,9 @@ const LOVE_MESSAGES = [
   'So in Love 💓',
   'Endlessly Yours 💞',
 ];
+
+// Mutable pool — replaced by DB data once loaded
+let messagePool = [...FALLBACK_MESSAGES];
 
 const MSG_COLORS = [
   'rgba(249,168,201,0.88)',
@@ -166,16 +169,21 @@ export default function GiftPage() {
   const cardRef = useRef(null);
   const frameRef = useRef(null);
 
-  // Load photos from Supabase (solo only) for falling items
+  // Load photos and messages from Supabase
   useEffect(() => {
     getPhotos().then(data => {
       if (data && data.length > 0) {
         const soloPhotos = data.filter(p => p.type === 'solo').map(p => p.src);
         if (soloPhotos.length > 0) {
           photoPool = soloPhotos;
-          photoQueue = []; // reset queue with new pool
+          photoQueue = [];
           setCenterPhoto(soloPhotos[Math.floor(Math.random() * soloPhotos.length)]);
         }
+      }
+    });
+    getMessages().then(data => {
+      if (data && data.length > 0) {
+        messagePool = data.map(m => m.text);
       }
     });
   }, []);
@@ -196,7 +204,7 @@ export default function GiftPage() {
           id: genId(),
           type: isPhoto ? 'photo' : 'message',
           src: isPhoto ? nextPhoto() : undefined,
-          content: !isPhoto ? randomPick(LOVE_MESSAGES) : undefined,
+          content: !isPhoto ? randomPick(messagePool) : undefined,
           color: !isPhoto ? randomPick(MSG_COLORS) : undefined,
           left: `${2 + Math.random() * 92}%`,
           duration: 7 + Math.random() * 6,
