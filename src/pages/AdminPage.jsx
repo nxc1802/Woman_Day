@@ -338,16 +338,25 @@ function PhotoUploadModal({ sectionLabel, initialFiles, onUpload, onClose, uploa
    Messages Tab  — Gift page falling text
    ============================================================ */
 function MessagesTab({ showToast }) {
-    const [items, setItems]     = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [modal, setModal]     = useState(null); // null | 'add' | { id, text, displayOrder }
+    const [items, setItems]       = useState([]);
+    const [loading, setLoading]   = useState(true);
+    const [tableReady, setReady]  = useState(true);
+    const [modal, setModal]       = useState(null); // null | 'add' | { id, text, displayOrder }
 
     const load = useCallback(async () => {
         try {
             setLoading(true);
             const data = await fetchGiftMessages();
+            setReady(true);
             setItems(data);
-        } catch { showToast('❌ Không tải được messages', true); }
+        } catch (err) {
+            // Table doesn't exist yet → show setup instructions instead of error toast
+            if (err?.code === 'PGRST205' || err?.message?.includes('gift_messages')) {
+                setReady(false);
+            } else {
+                showToast('❌ Không tải được messages', true);
+            }
+        }
         finally { setLoading(false); }
     }, [showToast]);
 
@@ -390,6 +399,26 @@ function MessagesTab({ showToast }) {
 
             {loading ? (
                 <div className="admin-loading">Đang tải</div>
+            ) : !tableReady ? (
+                <div className="admin-empty" style={{ textAlign: 'left' }}>
+                    <div className="empty-icon">⚠️</div>
+                    <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Bảng <code>gift_messages</code> chưa được tạo</p>
+                    <p style={{ marginBottom: '1rem' }}>Vào <a href="https://supabase.com/dashboard/project/xtxczpjwssuxhcgrlusn/sql" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--rose-light)' }}>Supabase SQL Editor</a> và chạy lệnh sau:</p>
+                    <pre className="admin-sql-block">{`create table gift_messages (
+  id            serial primary key,
+  text          text not null,
+  display_order int  not null default 0,
+  created_at    timestamptz default now()
+);
+alter table gift_messages enable row level security;
+create policy "Public read"   on gift_messages for select using (true);
+create policy "Public insert" on gift_messages for insert with check (true);
+create policy "Public update" on gift_messages for update using (true) with check (true);
+create policy "Public delete" on gift_messages for delete using (true);`}</pre>
+                    <button className="admin-add-btn" style={{ marginTop: '1rem' }} onClick={load}>
+                        🔄 Thử lại
+                    </button>
+                </div>
             ) : items.length === 0 ? (
                 <div className="admin-empty">
                     <div className="empty-icon">💬</div>

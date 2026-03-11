@@ -748,3 +748,18 @@
   background: rgba(250,204,21,0.2);
   border-color: rgba(250,204,21,0.5);
 }
+
+/* ---- SQL setup block ---- */
+.admin-sql-block {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(249,168,201,0.15);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #f0c0d8;
+  white-space: pre;
+  overflow-x: auto;
+  margin: 0;
+}
