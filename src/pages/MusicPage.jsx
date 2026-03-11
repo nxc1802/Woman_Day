@@ -128,7 +128,7 @@ export default function MusicPage() {
   }, []);
 
   const currentSong = currentIdx >= 0 ? songs[currentIdx] : null;
-  const defaultCover = covers[0] || STATIC_ANH_HONG_POOL[0];
+  const defaultCover = covers[0] ?? null;
 
   return (
     <div className="music-page">
