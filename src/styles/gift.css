@@ -167,6 +167,14 @@
   transition: opacity 0.35s ease;
   display: block;
 }
+.frame-loading {
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
 
 /* Orbiting hearts */
 .frame-hearts {

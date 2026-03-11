@@ -262,3 +262,12 @@
   .lb-img-wrap img { max-height: 68vh; border-radius: 10px; }
   .tab-btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
 }
+
+.gallery-loading {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  animation: pulse 2s ease-in-out infinite;
+}

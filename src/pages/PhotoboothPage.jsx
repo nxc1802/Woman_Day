@@ -4,15 +4,6 @@ import gsap from 'gsap';
 import '../styles/photobooth.css';
 import { getPhotos } from '../lib/prefetch';
 
-/* Static fallback - each image is a complete 4-frame photobooth strip */
-const STATIC_PHOTOS = [
-  '/assets/images/photobooth/z7596350399168_6f295dc09637e7ff5aad72d3a37329ad.jpg',
-  '/assets/images/photobooth/z7596350431285_e097b361d32bd6eab07007bd736b416f.jpg',
-  '/assets/images/photobooth/z7596350434610_35ac4c79a3807bd29e703a09b83dace4.jpg',
-  '/assets/images/photobooth/z7596350442471_01e2c9786ea4499d3d7fbb6fe7386bc3.jpg',
-  '/assets/images/photobooth/z7596350453797_179ff7812008523ac95465478257788e.jpg',
-  '/assets/images/photobooth/z7596350465181_ef182412c340a828157f3c17d083e141.jpg',
-];
 
 /* Per-strip sway config so each floats at its own rhythm */
 const STRIP_CONFIG = [
@@ -91,19 +82,16 @@ function Lightbox({ src, idx, total, onPrev, onNext, onClose }) {
 export default function PhotoboothPage() {
   const headerRef = useRef(null);
   const stripsRef = useRef([]);
-  const [photos, setPhotos] = useState(STATIC_PHOTOS);
+  const [photos, setPhotos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
-  // Load photobooth photos from Supabase
   useEffect(() => {
     getPhotos().then(data => {
-      if (data && data.length > 0) {
-        const boothPhotos = data.filter(p => p.category === 'photobooth').map(p => p.src);
-        if (boothPhotos.length > 0) {
-          setPhotos(boothPhotos);
-        }
-      }
-    });
+      const boothPhotos = (data ?? []).filter(p => p.category === 'photobooth').map(p => p.src);
+      setPhotos(boothPhotos);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -147,6 +135,8 @@ export default function PhotoboothPage() {
       </div>
 
       <div className="pb-gallery">
+        {loading && <p className="pb-loading">Đang tải ảnh... 🎞️</p>}
+        {!loading && photos.length === 0 && <p className="pb-loading">Chưa có ảnh nào 📷</p>}
         {photos.map((src, i) => {
           const cfg = STRIP_CONFIG[i % STRIP_CONFIG.length];
           return (

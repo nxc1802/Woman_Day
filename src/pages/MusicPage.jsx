@@ -5,34 +5,10 @@ import gsap from 'gsap';
 import '../styles/music.css';
 import { getSongs, getPhotos } from '../lib/prefetch';
 
-/* Pool of solo photos — shuffled once at module load, no repeats across songs */
-const STATIC_ANH_HONG_POOL = [
-  'IMG_0570.JPG', 'IMG_0571.JPG', 'IMG_0572.JPG', 'IMG_0573.JPG', 'IMG_0574.JPG',
-  'IMG_0575.JPG', 'IMG_0576.JPG', 'IMG_0577.JPG', 'IMG_0594.JPG', 'IMG_0595.JPG',
-  'IMG_0596.JPG', 'IMG_0597.JPG', 'IMG_0598.JPG', 'IMG_0599.JPG', 'IMG_0600.JPG',
-  'IMG_0601.JPG', 'IMG_0602.JPG', 'IMG_0603.JPG', 'IMG_0604.JPG', 'IMG_0605.JPG',
-  'IMG_0606.JPG', 'IMG_0607.JPG', 'IMG_0814.JPG', 'IMG_0817.JPG', 'IMG_0819.JPG',
-  'IMG_0820.JPG', 'IMG_0821.JPG', 'IMG_0823.JPG', 'IMG_0830.JPG', 'IMG_0833.JPG',
-  'IMG_0834.JPG', 'IMG_0835.JPG', 'IMG_0836.JPG', 'IMG_0837.JPG', 'IMG_0838.JPG',
-  'IMG_0839.JPG', 'IMG_0840.JPG', 'IMG_0841.JPG', 'IMG_0842.JPG', 'IMG_0843.JPG',
-  'IMG_0844.JPG', 'IMG_0845.JPG', 'IMG_0846.JPG', 'IMG_0847.JPG', 'IMG_0848.JPG',
-  'IMG_0851.JPG', 'IMG_0852.JPG', 'IMG_0951.JPG', 'IMG_0952.JPG', 'IMG_0953.JPG',
-  'IMG_0955.JPG', 'IMG_0956.JPG', 'IMG_0957.JPG', 'IMG_0966.JPG', 'IMG_1099.JPG',
-  'IMG_1100.JPG', 'IMG_1628.JPG', 'IMG_1633.JPG', 'IMG_1634.JPG', 'IMG_1647.JPG',
-  'IMG_1648.JPG', 'IMG_1649.JPG', 'IMG_1839.JPG', 'IMG_1842.JPG', 'IMG_1843.JPG',
-].map(f => `/assets/images/Anh_Hong/${f}`);
-
 function pickUniqueCovers(pool, count) {
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
-
-const STATIC_SONGS = [
-  { id: 0, title: 'Chiếc Khăn Gió Ấm', artist: 'Khánh Phương x meChill', src: '/assets/music/Chiếc Khăn Gió Ấm (Lofi Lyrics) - Khánh Phương x meChill _ gửi cho em đêm lung linh Hot  Tiktok - meChill.mp3' },
-  { id: 1, title: 'Hôn Lễ Của Em', artist: 'Hiền Hồ', src: '/assets/music/HÔN LỄ CỦA EM - HIỀN HỒ  Solo Version  Sáng tác Trọng Nhân - Hiền Hồ Official.mp3' },
-  { id: 2, title: 'Thằng Điên', artist: 'JustaTee x Phương Ly', src: '/assets/music/THẰNG ĐIÊN  JUSTATEE x PHƯƠNG LY  OFFICIAL MV - JustaTeeMusic.mp3' },
-  { id: 3, title: 'Ai Đưa Em Về', artist: 'TIA ft. Lê Thiện Hiếu', src: '/assets/music/TIA - Ai Đưa Em Về  Official M_V  Ft. Lê Thiện Hiếu (Low Cortisol Song) - TIA.mp3' },
-];
 
 function formatTime(s) {
   if (!s || isNaN(s)) return '0:00';
@@ -55,34 +31,28 @@ export default function MusicPage() {
   const headerRef = useRef(null);
   const playerRef = useRef(null);
 
-  // Load songs & covers from Supabase or static fallback
+  // Load songs & covers from DB
   useEffect(() => {
     let cancelled = false;
 
     async function init() {
-      // Get songs
-      let songList = STATIC_SONGS;
-      try {
-        const dbSongs = await getSongs();
-        if (dbSongs && dbSongs.length > 0) songList = dbSongs;
-      } catch { }
+      const [dbSongs, dbPhotos] = await Promise.all([
+        getSongs().catch(() => []),
+        getPhotos().catch(() => []),
+      ]);
 
-      // Get cover photos (solo photos)
-      let coverPool = STATIC_ANH_HONG_POOL;
-      try {
-        const dbPhotos = await getPhotos();
-        if (dbPhotos && dbPhotos.length > 0) {
-          const soloPhotos = dbPhotos.filter(p => p.type === 'solo').map(p => p.src);
-          if (soloPhotos.length > 0) coverPool = soloPhotos;
-        }
-      } catch { }
+      if (cancelled) return;
 
-      if (!cancelled) {
-        const selectedCovers = pickUniqueCovers(coverPool, songList.length);
-        setSongs(songList.map((s, i) => ({ ...s, cover: selectedCovers[i] || coverPool[0] })));
-        setCovers(selectedCovers);
-        setReady(true);
-      }
+      const songList  = dbSongs ?? [];
+      const coverPool = (dbPhotos ?? []).filter(p => p.type === 'solo').map(p => p.src);
+
+      const selectedCovers = coverPool.length > 0
+        ? pickUniqueCovers(coverPool, songList.length)
+        : [];
+
+      setSongs(songList.map((s, i) => ({ ...s, cover: selectedCovers[i] ?? null })));
+      setCovers(selectedCovers);
+      setReady(true);
     }
 
     init();

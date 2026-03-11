@@ -4,42 +4,9 @@ import gsap from 'gsap';
 import '../styles/gift.css';
 import { getPhotos, getMessages } from '../lib/prefetch';
 
-/* Static fallback — All 65 solo photos */
-const STATIC_PHOTOS = [
-  'IMG_0570', 'IMG_0571', 'IMG_0572', 'IMG_0573', 'IMG_0574',
-  'IMG_0575', 'IMG_0576', 'IMG_0577', 'IMG_0594', 'IMG_0595',
-  'IMG_0596', 'IMG_0597', 'IMG_0598', 'IMG_0599', 'IMG_0600',
-  'IMG_0601', 'IMG_0602', 'IMG_0603', 'IMG_0604', 'IMG_0605',
-  'IMG_0606', 'IMG_0607', 'IMG_0814', 'IMG_0817', 'IMG_0819',
-  'IMG_0820', 'IMG_0821', 'IMG_0823', 'IMG_0830', 'IMG_0833',
-  'IMG_0834', 'IMG_0835', 'IMG_0836', 'IMG_0837', 'IMG_0838',
-  'IMG_0839', 'IMG_0840', 'IMG_0841', 'IMG_0842', 'IMG_0843',
-  'IMG_0844', 'IMG_0845', 'IMG_0846', 'IMG_0847', 'IMG_0848',
-  'IMG_0851', 'IMG_0852', 'IMG_0951', 'IMG_0952', 'IMG_0953',
-  'IMG_0955', 'IMG_0956', 'IMG_0957', 'IMG_0966', 'IMG_1099',
-  'IMG_1100', 'IMG_1628', 'IMG_1633', 'IMG_1634', 'IMG_1647',
-  'IMG_1648', 'IMG_1649', 'IMG_1839', 'IMG_1842', 'IMG_1843',
-].map(n => `/assets/images/Anh_Hong/${n}.JPG`);
-
-const FALLBACK_MESSAGES = [
-  'I Love You ❤️',
-  'You Are My World 🌍',
-  'Forever With You 💕',
-  'My Beautiful Girl 🌸',
-  "Happy Women's Day 🌺",
-  "You're Everything ✨",
-  'My Sunshine ☀️',
-  'Always & Forever 💗',
-  'You Amaze Me 💖',
-  'My Heart is Yours ❤️',
-  'Beyond Words 🥰',
-  '8/3 💌',
-  'So in Love 💓',
-  'Endlessly Yours 💞',
-];
-
-// Mutable pool — replaced by DB data once loaded
-let messagePool = [...FALLBACK_MESSAGES];
+// Mutable pools — populated from DB after load
+let messagePool = [];
+let photosReady  = false;
 
 const MSG_COLORS = [
   'rgba(249,168,201,0.88)',
@@ -57,7 +24,7 @@ function randomPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 /* Queue that cycles through all photos in shuffled order, never repeating
    until every photo has been shown once */
 let photoQueue = [];
-let photoPool = STATIC_PHOTOS;
+let photoPool  = [];
 
 function nextPhoto() {
   if (photoQueue.length === 0) {
@@ -164,27 +131,24 @@ function SnowCanvas() {
 /* ---- Main Gift Page ---- */
 export default function GiftPage() {
   const [fallingItems, setFallingItems] = useState([]);
-  const [centerPhoto, setCenterPhoto] = useState(() => STATIC_PHOTOS[Math.floor(Math.random() * STATIC_PHOTOS.length)]);
+  const [centerPhoto, setCenterPhoto] = useState(null);
   const [centerFlash, setCenterFlash] = useState(false);
   const cardRef = useRef(null);
   const frameRef = useRef(null);
 
-  // Load photos and messages from Supabase
+  // Load photos and messages from DB
   useEffect(() => {
     getPhotos().then(data => {
-      if (data && data.length > 0) {
-        const soloPhotos = data.filter(p => p.type === 'solo').map(p => p.src);
-        if (soloPhotos.length > 0) {
-          photoPool = soloPhotos;
-          photoQueue = [];
-          setCenterPhoto(soloPhotos[Math.floor(Math.random() * soloPhotos.length)]);
-        }
+      const soloPhotos = (data ?? []).filter(p => p.type === 'solo').map(p => p.src);
+      photoPool    = soloPhotos;
+      photoQueue   = [];
+      photosReady  = soloPhotos.length > 0;
+      if (soloPhotos.length > 0) {
+        setCenterPhoto(soloPhotos[Math.floor(Math.random() * soloPhotos.length)]);
       }
     });
     getMessages().then(data => {
-      if (data && data.length > 0) {
-        messagePool = data.map(m => m.text);
-      }
+      if (data && data.length > 0) messagePool = data.map(m => m.text);
     });
   }, []);
 
@@ -194,12 +158,17 @@ export default function GiftPage() {
     gsap.from(cardRef.current, { opacity: 0, y: 50, duration: 0.9, delay: 0.8, ease: 'back.out(1.4)' });
   }, []);
 
-  // Spawn falling items
+  // Spawn falling items — only starts after photos are loaded from DB
   useEffect(() => {
     function spawn() {
-      const isPhoto = Math.random() > 0.38;   // ~62% photos
+      // Don't spawn photos until pool is loaded; still spawn messages early
+      const canPhoto = photosReady && photoPool.length > 0;
+      const canMsg   = messagePool.length > 0;
+      if (!canPhoto && !canMsg) return;
+
+      const isPhoto = canPhoto && (!canMsg || Math.random() > 0.38);
       setFallingItems(prev => {
-        if (prev.length >= 22) return prev;   // higher cap
+        if (prev.length >= 22) return prev;
         return [...prev, {
           id: genId(),
           type: isPhoto ? 'photo' : 'message',
@@ -214,9 +183,8 @@ export default function GiftPage() {
         }];
       });
     }
-    const timer = setInterval(spawn, 850);    // faster spawn
-    // Seed more items immediately
-    setTimeout(() => { for (let i = 0; i < 8; i++) setTimeout(spawn, i * 200); }, 600);
+    const timer = setInterval(spawn, 850);
+    setTimeout(() => { for (let i = 0; i < 8; i++) setTimeout(spawn, i * 200); }, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -258,7 +226,10 @@ export default function GiftPage() {
           <div className="frame-ring ring-outer" />
           <div className="frame-ring ring-middle" />
           <div className="frame-photo">
-            <img src={centerPhoto} alt="My love" />
+            {centerPhoto
+              ? <img src={centerPhoto} alt="My love" />
+              : <div className="frame-loading">💕</div>
+            }
           </div>
           <div className="frame-hearts">
             {['❤️', '💕', '💗', '✨'].map((e, i) => (

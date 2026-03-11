@@ -4,50 +4,6 @@ import gsap from 'gsap';
 import '../styles/gallery.css';
 import { getPhotos } from '../lib/prefetch';
 
-/* ---- Static fallback photos ---- */
-const STATIC_PHOTOS = [
-  // Solo — Anh_Hong
-  { src: '/assets/images/Anh_Hong/IMG_0836.JPG', caption: 'Radiantly beautiful 🌸', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0837.JPG', caption: 'That smile 💕', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0835.JPG', caption: 'My favorite view ✨', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0574.JPG', caption: 'So stunning 💗', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0577.JPG', caption: 'My world 🌺', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0596.JPG', caption: 'Always glowing 💖', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0603.JPG', caption: 'Pure happiness 🥰', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0951.JPG', caption: 'Effortlessly gorgeous ❤️', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0957.JPG', caption: 'That look 💓', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_1099.JPG', caption: 'Perfection 🌷', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_1628.JPG', caption: 'My sunshine ☀️', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_1839.JPG', caption: 'You are everything 💞', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0570.JPG', caption: 'Beautifully you 🌸', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0575.JPG', caption: 'My heart 💗', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0594.JPG', caption: 'So lovely 🥰', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0834.JPG', caption: 'Absolutely breathtaking 💞', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0838.JPG', caption: 'Wow 🌸', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_0843.JPG', caption: "Still can't believe you're mine ❤️", type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_1100.JPG', caption: 'My everything ✨', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_1634.JPG', caption: 'So so beautiful 💕', type: 'solo' },
-  { src: '/assets/images/Anh_Hong/IMG_1843.JPG', caption: 'Forever my favorite 💗', type: 'solo' },
-  // Couple — Chung_minh
-  { src: '/assets/images/Chung_minh/IMG_0716.JPG', caption: 'Us ❤️', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_0859.JPG', caption: 'Together is my favorite place 💕', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_0909.JPG', caption: 'Every day with you 🌸', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_0970.jpeg', caption: 'Making memories 💗', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1095.jpeg', caption: 'My happy place ✨', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1238.jpeg', caption: 'Two hearts 💖', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1397.jpeg', caption: 'Adventures together 🌺', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1540.jpeg', caption: 'You + me 🥰', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1739.jpeg', caption: 'Infinite love 💞', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1836.jpeg', caption: 'Forever & always ❤️', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_0717.JPG', caption: 'Us being us 💕', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_0860.JPG', caption: 'Side by side 💗', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_0910.JPG', caption: 'Happiest with you 🌺', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1741.jpeg', caption: 'Perfect moments 💖', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1745.jpeg', caption: 'Cherished 🥰', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1750.jpeg', caption: 'Our story 💓', type: 'couple' },
-  { src: '/assets/images/Chung_minh/IMG_1746.jpeg', caption: 'Still falling ❤️', type: 'couple' },
-];
-
 /* Shuffle an array deterministically by offset */
 function rotate(arr, offset) {
   const n = arr.length;
@@ -86,24 +42,20 @@ function MarqueeRow({ photos, direction = 'left', speed = 40, rowHeight = 220, o
 }
 
 export default function GalleryPage() {
-  const [allPhotos, setAllPhotos] = useState(STATIC_PHOTOS);
+  const [allPhotos, setAllPhotos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [lightbox, setLightbox] = useState(null);
   const [lbIdx, setLbIdx] = useState(0);
   const headerRef = useRef(null);
   const stripRef = useRef(null);
 
-  // Fetch photos from Supabase, merge with static or use as-is
   useEffect(() => {
     getPhotos().then(data => {
-      if (data && data.length > 0) {
-        // Only use gallery photos from Supabase
-        const galleryPhotos = data.filter(p => p.category === 'gallery' || !p.category);
-        if (galleryPhotos.length > 0) {
-          setAllPhotos(galleryPhotos);
-        }
-      }
-    });
+      const galleryPhotos = (data ?? []).filter(p => p.category === 'gallery' || !p.category);
+      setAllPhotos(galleryPhotos);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const photos = useMemo(() =>
@@ -164,9 +116,17 @@ export default function GalleryPage() {
 
       {/* Infinite marquee strips */}
       <div className="marquee-strips" ref={stripRef}>
-        <MarqueeRow photos={row1} direction="left" speed={5} rowHeight={230} onPhotoClick={openLightbox} />
-        <MarqueeRow photos={row2} direction="right" speed={6} rowHeight={200} onPhotoClick={openLightbox} />
-        <MarqueeRow photos={row3} direction="left" speed={4.5} rowHeight={215} onPhotoClick={openLightbox} />
+        {loading ? (
+          <div className="gallery-loading">Đang tải ảnh... 💕</div>
+        ) : photos.length === 0 ? (
+          <div className="gallery-loading">Chưa có ảnh nào 🌸</div>
+        ) : (
+          <>
+            <MarqueeRow photos={row1} direction="left" speed={5} rowHeight={230} onPhotoClick={openLightbox} />
+            <MarqueeRow photos={row2} direction="right" speed={6} rowHeight={200} onPhotoClick={openLightbox} />
+            <MarqueeRow photos={row3} direction="left" speed={4.5} rowHeight={215} onPhotoClick={openLightbox} />
+          </>
+        )}
       </div>
 
       {/* Footer hint */}
