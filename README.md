@@ -11,12 +11,6 @@ Một món quà công nghệ tinh tế, lãng mạn dành tặng phái đẹp nh
 
 ## 📽️ Video Demo
 
-> [!TIP]
-> **Hướng dẫn chèn Video Demo:**
-> Vì video của bạn dài và dung lượng lớn, hãy sử dụng link URL để đảm bảo repo gọn nhẹ:
-> 1. Upload video lên **YouTube / Vimeo** hoặc kéo thả vào một **GitHub Issue/PR** để lấy link trực tiếp.
-> 2. Dán đường dẫn video vào thuộc tính `src` trong đoạn mã dưới đây.
-
 <!-- Bắt đầu đoạn mã Video -->
 <div align="center">
   <video src="https://github.com/nxc1802/Woman_Day/releases/download/untagged-bc1cda8c4bdd03acfe09/Ghi.Man.hinh.2026-04-16.luc.04.08.25.mp4" width="100%" controls autoplay muted loop>
