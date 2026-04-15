@@ -13,7 +13,7 @@ Một món quà công nghệ tinh tế, lãng mạn dành tặng phái đẹp nh
 
 <!-- Bắt đầu đoạn mã Video -->
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/b4bb61cb-9dbd-4923-9754-698539ab09b1" width="100%" controls autoplay muted loop>
+  <video src="https://github.com/user-attachments/assets/7829d985-e861-48cb-a3f9-dad0dbac04ac" width="100%" controls autoplay muted loop>
     Trình duyệt của bạn không hỗ trợ tag video.
   </video>
   <p><i>Bản demo sinh động về giao diện và hiệu ứng của ứng dụng</i></p>
