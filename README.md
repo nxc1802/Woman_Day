@@ -13,10 +13,10 @@ Một món quà công nghệ tinh tế, lãng mạn dành tặng phái đẹp nh
 
 <!-- Bắt đầu đoạn mã Video -->
 <div align="center">
-  <a href="https://youtu.be/K0eIj6MtHL8" target="_blank">
-    <img src="https://img.youtube.com/vi/K0eIj6MtHL8/maxresdefault.jpg" alt="Watch the video" style="width:100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-  </a>
-  <p><i>Click vào ảnh để xem Video Demo trên YouTube</i></p>
+  <video src="https://github.com/user-attachments/assets/b4bb61cb-9dbd-4923-9754-698539ab09b1" width="100%" controls autoplay muted loop>
+    Trình duyệt của bạn không hỗ trợ tag video.
+  </video>
+  <p><i>Bản demo sinh động về giao diện và hiệu ứng của ứng dụng</i></p>
 </div>
 <!-- Kết thúc đoạn mã Video -->
 
