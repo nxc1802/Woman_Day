@@ -13,10 +13,10 @@ Một món quà công nghệ tinh tế, lãng mạn dành tặng phái đẹp nh
 
 <!-- Bắt đầu đoạn mã Video -->
 <div align="center">
-  <video src="https://github.com/nxc1802/Woman_Day/releases/download/Video/Ghi.Man.hinh.2026-04-16.luc.04.08.25.mp4" width="100%" controls autoplay muted loop>
-    Trình duyệt của bạn không hỗ trợ tag video.
-  </video>
-  <p><i>Bản demo sinh động về giao diện và hiệu ứng của ứng dụng</i></p>
+  <a href="https://youtu.be/K0eIj6MtHL8" target="_blank">
+    <img src="https://img.youtube.com/vi/K0eIj6MtHL8/maxresdefault.jpg" alt="Watch the video" style="width:100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+  </a>
+  <p><i>Click vào ảnh để xem Video Demo trên YouTube</i></p>
 </div>
 <!-- Kết thúc đoạn mã Video -->
 
