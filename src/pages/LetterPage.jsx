@@ -79,6 +79,38 @@ function LetterModal({ letter, onClose, onEdit }) {
   );
 }
 
+/* ---- Confirm Open Letter Modal ---- */
+function ConfirmOpenModal({ letter, onConfirm, onClose }) {
+  const overlayRef = useRef(null);
+  const modalRef   = useRef(null);
+
+  useEffect(() => {
+    gsap.from(overlayRef.current, { opacity: 0, duration: 0.25 });
+    gsap.from(modalRef.current, { opacity: 0, scale: 0.9, y: 20, duration: 0.4, ease: 'back.out(1.5)' });
+  }, []);
+
+  function close() {
+    gsap.to(overlayRef.current, { opacity: 0, duration: 0.22, onComplete: onClose });
+  }
+
+  return (
+    <div className="letter-overlay" ref={overlayRef} onClick={close}>
+      <div className="confirm-modal" ref={modalRef} onClick={e => e.stopPropagation()}>
+        <div className="confirm-icon">💌</div>
+        <h2 className="confirm-title">Mở bức thư này?</h2>
+        <p className="confirm-text">
+          Lá thư này đang được gói kín. Bạn có chắc muốn mở nó ngay bây giờ không? 
+          <br /><small>(Sau khi mở sẽ không thể gói lại được nữa)</small>
+        </p>
+        <div className="confirm-actions">
+          <button className="confirm-btn-no" onClick={close}>Để sau</button>
+          <button className="confirm-btn-yes" onClick={() => { onConfirm(); onClose(); }}>Mở ngay ❤️</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---- Edit Letter Form Modal ---- */
 function EditLetterModal({ letter, onSave, onClose }) {
   const overlayRef = useRef(null);
@@ -413,6 +445,8 @@ export default function LetterPage() {
   const [openLetter, setOpenLetter]           = useState(null);
   const [editingLetter, setEditingLetter]     = useState(null);
   const [showAddForm, setShowAddForm]         = useState(false);
+  const [confirmOpenLetter, setConfirmOpenLetter] = useState(null);
+  const [openingLetterId, setOpeningLetterId] = useState(null);
   const [filterAuthor, setFilterAuthor]       = useState('all');
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
@@ -472,14 +506,21 @@ export default function LetterPage() {
   }
 
   async function openLockedLetter(letter) {
-    try {
-      await updateLetter(letter.id, { isLocked: false });
-      setLetters(prev => prev.map(l => l.id === letter.id ? { ...l, isLocked: false } : l));
-      invalidateLetters();
-      setOpenLetter({ ...letter, isLocked: false });
-    } catch (err) {
-      console.error('Failed to open letter:', err);
-    }
+    setOpeningLetterId(letter.id);
+    
+    // Play animation for 800ms before actually opening
+    setTimeout(async () => {
+      try {
+        await updateLetter(letter.id, { isLocked: false });
+        setLetters(prev => prev.map(l => l.id === letter.id ? { ...l, isLocked: false } : l));
+        invalidateLetters();
+        setOpenLetter({ ...letter, isLocked: false });
+      } catch (err) {
+        console.error('Failed to open letter:', err);
+      } finally {
+        setOpeningLetterId(null);
+      }
+    }, 800);
   }
 
   function handleCardClick(letter) {
@@ -493,11 +534,7 @@ export default function LetterPage() {
     }
     
     if (letter.isLocked) {
-      // For locked letters, we show a special prompt or just open it directly
-      // Based on requirements, "Once opened, it cannot be closed again"
-      if (window.confirm("Bạn muốn mở bức thư này chứ? Sau khi mở sẽ không thể gói lại được nữa.")) {
-        openLockedLetter(letter);
-      }
+      setConfirmOpenLetter(letter);
       return;
     }
     
@@ -531,7 +568,7 @@ export default function LetterPage() {
         {filtered.map(letter => (
           <div
             key={letter.id}
-            className={`letter-card card-${letter.size} ${deleteConfirmId === letter.id ? 'delete-mode' : ''} ${letter.isLocked ? 'is-locked' : ''}`}
+            className={`letter-card card-${letter.size} ${deleteConfirmId === letter.id ? 'delete-mode' : ''} ${letter.isLocked ? 'is-locked' : ''} ${openingLetterId === letter.id ? 'is-opening' : ''}`}
             style={{ '--rot': `${letter.rotation}deg`, '--card-color': letter.color }}
             onMouseDown={() => startLongPress(letter)}
             onMouseUp={cancelLongPress}
@@ -593,6 +630,7 @@ export default function LetterPage() {
       {openLetter    && <LetterModal letter={openLetter} onClose={() => setOpenLetter(null)} onEdit={setEditingLetter} />}
       {showAddForm   && <AddLetterModal onAdd={handleAdd} onClose={() => setShowAddForm(false)} />}
       {editingLetter && <EditLetterModal letter={editingLetter} onSave={handleEditSave} onClose={() => setEditingLetter(null)} />}
+      {confirmOpenLetter && <ConfirmOpenModal letter={confirmOpenLetter} onConfirm={() => openLockedLetter(confirmOpenLetter)} onClose={() => setConfirmOpenLetter(null)} />}
     </div>
   );
 }
