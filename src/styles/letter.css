@@ -80,9 +80,9 @@
 }
 
 /* Card sizes */
-.card-large  { padding: 2rem 1.8rem 1.8rem; }
-.card-medium { padding: 1.7rem 1.6rem 1.6rem; }
-.card-small  { padding: 1.4rem 1.4rem 1.3rem; }
+.card-large  { padding: 2rem 1.8rem 1.8rem; min-height: 280px; }
+.card-medium { padding: 1.7rem 1.6rem 1.6rem; min-height: 220px; }
+.card-small  { padding: 1.4rem 1.4rem 1.3rem; min-height: 160px; }
 
 /* Pin at top */
 .card-pin {
@@ -173,17 +173,19 @@
 .letter-card.is-locked {
   background: #f8f1e7; /* Paper/Envelope color */
   border: 1px solid rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .locked-cover {
-  position: absolute;
-  inset: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
   z-index: 5;
+  position: relative; /* Changed from absolute to allow min-height to work */
 }
 
 /* Envelope fold effect */
