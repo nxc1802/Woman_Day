@@ -58,13 +58,13 @@ function LetterModal({ letter, onClose, onEdit }) {
         )}
 
         <div className="modal-body">
+          {letter.content.split('\n').map((line, i) =>
+            line.trim() ? <p key={i} className="modal-line">{line}</p> : <br key={i} />
+          )}
           {letter.imageUrl && (
             <div className="modal-image-container">
               <img src={letter.imageUrl} alt="Letter attachment" className="modal-image" />
             </div>
-          )}
-          {letter.content.split('\n').map((line, i) =>
-            line.trim() ? <p key={i} className="modal-line">{line}</p> : <br key={i} />
           )}
         </div>
 
