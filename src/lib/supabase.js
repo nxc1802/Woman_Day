@@ -9,17 +9,20 @@ export const supabase = createClient(url, key);
 const LETTERS_TABLE = 'custom_letters';
 
 const mapLetter = row => ({
-  id:        row.id,
-  author:    row.author,
-  icon:      row.icon,
-  tag:       row.tag,
-  title:     row.title,
-  color:     row.color,
-  textColor: row.text_color,
-  rotation:  row.rotation,
-  size:      row.size,
-  pill:      row.pill,
-  content:   row.content,
+  id:            row.id,
+  author:        row.author,
+  icon:          row.icon,
+  tag:           row.tag,
+  title:         row.title,
+  color:         row.color,
+  textColor:     row.text_color,
+  rotation:      row.rotation,
+  size:          row.size,
+  pill:          row.pill,
+  content:       row.content,
+  isLocked:      row.is_locked ?? false,
+  lockedMessage: row.locked_message ?? '',
+  imageUrl:      row.image_url ?? null,
 });
 
 export async function fetchAllLetters() {
@@ -32,15 +35,45 @@ export async function fetchAllLetters() {
 export async function insertLetter(letter) {
   const { data, error } = await supabase
     .from(LETTERS_TABLE)
-    .insert({ id: letter.id, author: letter.author, icon: letter.icon, tag: letter.tag, title: letter.title, color: letter.color, text_color: letter.textColor, rotation: letter.rotation, size: letter.size, pill: letter.pill ?? null, content: letter.content })
+    .insert({
+      id: letter.id,
+      author: letter.author,
+      icon: letter.icon,
+      tag: letter.tag,
+      title: letter.title,
+      color: letter.color,
+      text_color: letter.textColor,
+      rotation: letter.rotation,
+      size: letter.size,
+      pill: letter.pill ?? null,
+      content: letter.content,
+      is_locked: letter.isLocked ?? false,
+      locked_message: letter.lockedMessage ?? '',
+      image_url: letter.imageUrl ?? null
+    })
     .select().single();
   if (error) throw error;
   return mapLetter(data);
 }
 
 export async function updateLetter(id, fields) {
+  const updateData = {
+    author: fields.author,
+    icon: fields.icon,
+    tag: fields.tag,
+    title: fields.title,
+    text_color: fields.textColor,
+    size: fields.size,
+    pill: fields.pill ?? null,
+    content: fields.content,
+  };
+  
+  if (fields.isLocked !== undefined)      updateData.is_locked = fields.isLocked;
+  if (fields.lockedMessage !== undefined) updateData.locked_message = fields.lockedMessage;
+  if (fields.imageUrl !== undefined)      updateData.image_url = fields.imageUrl;
+
   const { error } = await supabase.from(LETTERS_TABLE)
-    .update({ author: fields.author, icon: fields.icon, tag: fields.tag, title: fields.title, text_color: fields.textColor, size: fields.size, pill: fields.pill ?? null, content: fields.content })
+    .update(updateData)
     .eq('id', id);
   if (error) throw error;
 }

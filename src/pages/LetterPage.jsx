@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import '../styles/letter.css';
-import { insertLetter, updateLetter, deleteLetter } from '../lib/supabase';
+import { insertLetter, updateLetter, deleteLetter, uploadPhotoFile } from '../lib/supabase';
 import { getLetters, invalidateLetters } from '../lib/prefetch';
 
 const CARD_COLORS = [
@@ -58,6 +58,11 @@ function LetterModal({ letter, onClose, onEdit }) {
         )}
 
         <div className="modal-body">
+          {letter.imageUrl && (
+            <div className="modal-image-container">
+              <img src={letter.imageUrl} alt="Letter attachment" className="modal-image" />
+            </div>
+          )}
           {letter.content.split('\n').map((line, i) =>
             line.trim() ? <p key={i} className="modal-line">{line}</p> : <br key={i} />
           )}
@@ -79,14 +84,19 @@ function EditLetterModal({ letter, onSave, onClose }) {
   const overlayRef = useRef(null);
   const formRef    = useRef(null);
   const [form, setForm] = useState({
-    author:  letter.author,
-    icon:    letter.icon   || '💊',
-    tag:     letter.tag    || '',
-    title:   letter.title  || '',
-    pill:    letter.pill   || '',
-    content: letter.content || '',
+    author:        letter.author,
+    icon:          letter.icon   || '💊',
+    tag:           letter.tag    || '',
+    title:         letter.title  || '',
+    pill:          letter.pill   || '',
+    content:       letter.content || '',
+    isLocked:      letter.isLocked || false,
+    lockedMessage: letter.lockedMessage || '',
+    imageUrl:      letter.imageUrl || null,
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.25 });
@@ -97,19 +107,37 @@ function EditLetterModal({ letter, onSave, onClose }) {
     gsap.to(overlayRef.current, { opacity: 0, duration: 0.22, onComplete: onClose });
   }
 
+  async function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadPhotoFile(file);
+      setForm(f => ({ ...f, imageUrl: url }));
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Tải ảnh thất bại!');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.title.trim() || !form.content.trim() || saving) return;
     setSaving(true);
     const updated = {
       ...letter,
-      author:    form.author,
-      icon:      form.icon,
-      tag:       form.tag.trim() || (form.author === 'Anh' ? 'Từ anh' : 'Từ em'),
-      title:     form.title.trim(),
-      size:      form.content.length > 150 ? 'large' : form.content.length > 80 ? 'medium' : 'small',
-      pill:      form.pill.trim() || null,
-      content:   form.content.trim(),
+      author:        form.author,
+      icon:          form.icon,
+      tag:           form.tag.trim() || (form.author === 'Anh' ? 'Từ anh' : 'Từ em'),
+      title:         form.title.trim(),
+      size:          form.content.length > 150 ? 'large' : form.content.length > 80 ? 'medium' : 'small',
+      pill:          form.pill.trim() || null,
+      content:       form.content.trim(),
+      isLocked:      form.isLocked,
+      lockedMessage: form.lockedMessage.trim(),
+      imageUrl:      form.imageUrl,
     };
     await onSave(updated);
     close();
@@ -172,9 +200,39 @@ function EditLetterModal({ letter, onSave, onClose }) {
               value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={5} required />
           </div>
 
+          <div className="form-field">
+            <label className="form-label">Ảnh đính kèm</label>
+            <div className="image-upload-preview" onClick={() => !form.imageUrl && fileInputRef.current.click()}>
+              {uploading ? (
+                <span>Đang tải...</span>
+              ) : form.imageUrl ? (
+                <>
+                  <img src={form.imageUrl} alt="Preview" />
+                  <button type="button" className="btn-remove-img" onClick={(e) => { e.stopPropagation(); setForm(f => ({ ...f, imageUrl: null })); }}>✕</button>
+                </>
+              ) : (
+                <span>+ Thêm ảnh</span>
+              )}
+            </div>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
+          </div>
+
+          <div className="form-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.8rem' }}>
+            <input type="checkbox" id="isLocked" checked={form.isLocked} onChange={e => setForm(f => ({ ...f, isLocked: e.target.checked }))} />
+            <label htmlFor="isLocked" className="form-label" style={{ marginBottom: 0 }}>Gói thư lại (Ẩn nội dung)</label>
+          </div>
+
+          {form.isLocked && (
+            <div className="form-field">
+              <label className="form-label">Thông tin bên ngoài hộp quà</label>
+              <input className="form-input" placeholder="Mở khi em thấy buồn..."
+                value={form.lockedMessage} onChange={e => setForm(f => ({ ...f, lockedMessage: e.target.value }))} maxLength={100} />
+            </div>
+          )}
+
           <div className="form-actions">
             <button type="button" className="btn-cancel" onClick={close}>Hủy</button>
-            <button type="submit" className="btn-save" disabled={saving}>
+            <button type="submit" className="btn-save" disabled={saving || uploading}>
               {saving ? 'Đang lưu...' : 'Lưu thay đổi 💾'}
             </button>
           </div>
@@ -188,7 +246,19 @@ function EditLetterModal({ letter, onSave, onClose }) {
 function AddLetterModal({ onAdd, onClose }) {
   const overlayRef = useRef(null);
   const formRef    = useRef(null);
-  const [form, setForm] = useState({ author: 'Anh', icon: '💊', tag: '', title: '', pill: '', content: '' });
+  const [form, setForm] = useState({ 
+    author: 'Anh', 
+    icon: '💊', 
+    tag: '', 
+    title: '', 
+    pill: '', 
+    content: '',
+    isLocked: false,
+    lockedMessage: '',
+    imageUrl: null
+  });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     gsap.from(overlayRef.current, { opacity: 0, duration: 0.25 });
@@ -197,6 +267,21 @@ function AddLetterModal({ onAdd, onClose }) {
 
   function close() {
     gsap.to(overlayRef.current, { opacity: 0, duration: 0.22, onComplete: onClose });
+  }
+
+  async function handleFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadPhotoFile(file);
+      setForm(f => ({ ...f, imageUrl: url }));
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Tải ảnh thất bại!');
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleSubmit(e) {
@@ -215,6 +300,9 @@ function AddLetterModal({ onAdd, onClose }) {
       size: form.content.length > 150 ? 'large' : form.content.length > 80 ? 'medium' : 'small',
       pill: form.pill.trim() || null,
       content: form.content.trim(),
+      isLocked: form.isLocked,
+      lockedMessage: form.lockedMessage.trim(),
+      imageUrl: form.imageUrl
     });
     close();
   }
@@ -278,9 +366,39 @@ function AddLetterModal({ onAdd, onClose }) {
               value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={5} required />
           </div>
 
+          <div className="form-field">
+            <label className="form-label">Ảnh đính kèm</label>
+            <div className="image-upload-preview" onClick={() => !form.imageUrl && fileInputRef.current.click()}>
+              {uploading ? (
+                <span>Đang tải...</span>
+              ) : form.imageUrl ? (
+                <>
+                  <img src={form.imageUrl} alt="Preview" />
+                  <button type="button" className="btn-remove-img" onClick={(e) => { e.stopPropagation(); setForm(f => ({ ...f, imageUrl: null })); }}>✕</button>
+                </>
+              ) : (
+                <span>+ Thêm ảnh</span>
+              )}
+            </div>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
+          </div>
+
+          <div className="form-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.8rem' }}>
+            <input type="checkbox" id="isLocked" checked={form.isLocked} onChange={e => setForm(f => ({ ...f, isLocked: e.target.checked }))} />
+            <label htmlFor="isLocked" className="form-label" style={{ marginBottom: 0 }}>Gói thư lại (Ẩn nội dung)</label>
+          </div>
+
+          {form.isLocked && (
+            <div className="form-field">
+              <label className="form-label">Thông tin bên ngoài hộp quà</label>
+              <input className="form-input" placeholder="Mở khi em thấy buồn..."
+                value={form.lockedMessage} onChange={e => setForm(f => ({ ...f, lockedMessage: e.target.value }))} maxLength={100} />
+            </div>
+          )}
+
           <div className="form-actions">
             <button type="button" className="btn-cancel" onClick={close}>Hủy</button>
-            <button type="submit" className="btn-save">Ghim thư ❤️</button>
+            <button type="submit" className="btn-save" disabled={uploading}>Ghim thư ❤️</button>
           </div>
         </form>
       </div>
@@ -353,6 +471,17 @@ export default function LetterPage() {
     clearTimeout(longPressTimer.current);
   }
 
+  async function openLockedLetter(letter) {
+    try {
+      await updateLetter(letter.id, { isLocked: false });
+      setLetters(prev => prev.map(l => l.id === letter.id ? { ...l, isLocked: false } : l));
+      invalidateLetters();
+      setOpenLetter({ ...letter, isLocked: false });
+    } catch (err) {
+      console.error('Failed to open letter:', err);
+    }
+  }
+
   function handleCardClick(letter) {
     if (didLongPress.current) {
       didLongPress.current = false;
@@ -362,6 +491,16 @@ export default function LetterPage() {
       setDeleteConfirmId(null);
       return;
     }
+    
+    if (letter.isLocked) {
+      // For locked letters, we show a special prompt or just open it directly
+      // Based on requirements, "Once opened, it cannot be closed again"
+      if (window.confirm("Bạn muốn mở bức thư này chứ? Sau khi mở sẽ không thể gói lại được nữa.")) {
+        openLockedLetter(letter);
+      }
+      return;
+    }
+    
     setOpenLetter(letter);
   }
 
@@ -392,7 +531,7 @@ export default function LetterPage() {
         {filtered.map(letter => (
           <div
             key={letter.id}
-            className={`letter-card card-${letter.size} ${deleteConfirmId === letter.id ? 'delete-mode' : ''}`}
+            className={`letter-card card-${letter.size} ${deleteConfirmId === letter.id ? 'delete-mode' : ''} ${letter.isLocked ? 'is-locked' : ''}`}
             style={{ '--rot': `${letter.rotation}deg`, '--card-color': letter.color }}
             onMouseDown={() => startLongPress(letter)}
             onMouseUp={cancelLongPress}
@@ -404,21 +543,31 @@ export default function LetterPage() {
           >
             <div className="card-pin" />
 
-            <div className="card-inner">
-              <div className="card-tag-row">
-                <span className="card-icon-badge">{letter.icon}</span>
-                <span className="card-tag" style={{ color: letter.textColor }}>{letter.tag}</span>
-                <span className={`author-badge-sm ${letter.author === 'Anh' ? 'badge-anh' : 'badge-em'}`}>
-                  {letter.author === 'Anh' ? '💙' : '🩷'} {letter.author}
-                </span>
+            {letter.isLocked ? (
+              <div className="locked-cover">
+                <div className="locked-seal">❤️</div>
+                <p className="locked-message-text">{letter.lockedMessage || 'Một bí mật đang chờ em...'}</p>
+                <div className="open-prompt-overlay">
+                  <button className="open-btn">Mở thư 💌</button>
+                </div>
               </div>
-              <h3 className="card-heading">{letter.title}</h3>
-              {letter.pill && (
-                <p className="card-pill-preview">❝ {letter.pill.slice(0, 55)}{letter.pill.length > 55 ? '...' : ''} ❞</p>
-              )}
-              <p className="card-preview">{letter.content.slice(0, 70)}...</p>
-              <span className="card-read-more" style={{ color: letter.textColor }}>Đọc thêm →</span>
-            </div>
+            ) : (
+              <div className="card-inner">
+                <div className="card-tag-row">
+                  <span className="card-icon-badge">{letter.icon}</span>
+                  <span className="card-tag" style={{ color: letter.textColor }}>{letter.tag}</span>
+                  <span className={`author-badge-sm ${letter.author === 'Anh' ? 'badge-anh' : 'badge-em'}`}>
+                    {letter.author === 'Anh' ? '💙' : '🩷'} {letter.author}
+                  </span>
+                </div>
+                <h3 className="card-heading">{letter.title}</h3>
+                {letter.pill && (
+                  <p className="card-pill-preview">❝ {letter.pill.slice(0, 55)}{letter.pill.length > 55 ? '...' : ''} ❞</p>
+                )}
+                <p className="card-preview">{letter.content.slice(0, 70)}...</p>
+                <span className="card-read-more" style={{ color: letter.textColor }}>Đọc thêm →</span>
+              </div>
+            )}
             <div className="card-shine" />
 
             {/* Delete confirm overlay — appears after long press */}
